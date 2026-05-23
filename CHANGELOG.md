@@ -1,0 +1,47 @@
+# Changelog
+
+## 0.5.0
+
+- Added `extensions/catalog.json` and `extensions/README.md` for discoverable optional method modules.
+- Added `presets/catalog.json` and `presets/README.md` for ready operational bundles built from existing profiles, blueprints, prompts, scorecards, fixtures and gates.
+- Added CLI discovery commands for `sdc extension list` and `sdc preset list`, including JSON output.
+- Extended `tools/spec_lint.py` to validate extension and preset catalog structure, paths, fixtures, profile IDs and registry language.
+- Added GitHub/Copilot ecosystem files: path-specific Copilot instructions, PR template, issue templates, optional devcontainer, expanded Actions validation, and integration catalog entries.
+- Added a read-only terminal demo command and walkthrough for the builder habit dashboard fixture.
+- Added Continuous Specification Enforcement docs, scorecard, CLI tool, smoke example, and doctor integration.
+- Updated public docs and contribution rules for controlled extension/preset contributions.
+- No Git or ZIP actions are part of this release.
+
+## 0.4.0
+
+- Added the installable CLI wrapper through `sdc_cli` and the `sdc` console script.
+- Promoted `README.md`, `MANIFESTO.md`, and `CONTRIBUTING.md` to English-first public entrypoints, with `.it.md` companions for the Italian versions.
+- Added `integrations/catalog.json` and CLI discovery via `sdc integration list`.
+- Expanded the benchmark harness from a single fixture to multiple domain-specific fixtures, including B2B leave management and internal PDF RAG evaluation.
+- Added `python3 tools/sdc_harness.py run --all` and updated `make harness` to run every available fixture.
+- Updated `doctor` to run all fixtures by default and added `doctor --quick` for the fixture-001 smoke path.
+- Added `docs/25-english-public-index.md` for English-first public docs and Italian companion policy.
+- Improved `sdc init` onboarding with positional project-name shorthand and clearer scaffold errors.
+- No Git or ZIP actions are part of this release.
+
+## 0.3.0
+
+- Added `tools/sdc.py` command surface for command listing, prompt inspection, artifact manifest, branch naming, scaffold delegation, harness delegation and doctor checks.
+- Added reproducible benchmark fixture harness with golden artifacts.
+- Added raw-prompt vs Specification-Driven Coding case study.
+- Extended scaffold output with raw request, intake and artifact manifest.
+- Added Makefile and CI coverage for harness validation.
+- Removed nominal dependency/framing around external specification toolkits; repository now presents an autonomous methodology and toolkit.
+
+## 0.2.0
+
+- Added Builder Ingestion Protocol.
+- Added Vertical Blueprint Contracts.
+- Added full-project, small-change, web, mobile, WordPress, RAG and multi-agent blueprints.
+- Added scorecards for prompts, blueprints, implementation and multi-agent systems.
+- Added model execution principles for assumptions, useful verbosity and evidence.
+- Added blueprint scoring tool.
+
+## 0.1.0
+
+- Initial manifesto, project profiles, prompts, skills, agents and toolkit adapters.

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Specification-Driven Coding Vertical Blueprint",
+  "type": "object",
+  "required": [
+    "role_contract",
+    "product_intent",
+    "project_profile",
+    "stack_contract",
+    "architecture_contract",
+    "output_contract",
+    "acceptance_gates",
+    "scorecard"
+  ],
+  "properties": {
+    "role_contract": { "type": "string" },
+    "product_intent": { "type": "string" },
+    "project_profile": { "type": "string" },
+    "assumption_ledger": { "type": "array", "items": { "type": "object" } },
+    "stack_contract": { "type": "object" },
+    "architecture_contract": { "type": "object" },
+    "security_privacy_contract": { "type": "object" },
+    "performance_contract": { "type": "object" },
+    "output_contract": { "type": "object" },
+    "acceptance_gates": { "type": "array", "items": { "type": "string" } },
+    "scorecard": { "type": "object" }
+  },
+  "additionalProperties": true
+}

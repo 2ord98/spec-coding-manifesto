@@ -1,0 +1,768 @@
+#!/usr/bin/env python3
+"""Minimal linter for the Specification-Driven Coding repository."""
+from pathlib import Path
+import json
+import re
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+
+REQUIRED_PROJECT_SECTIONS = [
+    "## Domande di intake obbligatorie",
+    "## Stack candidates",
+    "## Must-have spec fields",
+    "## Anti-pattern da evitare",
+    "## Acceptance gates",
+]
+
+REQUIRED_ROOT = [
+    "README.md",
+    "AGENTS.md",
+    "integrations/README.md",
+    "integrations/catalog.json",
+    "extensions/README.md",
+    "extensions/catalog.json",
+    "presets/README.md",
+    "presets/catalog.json",
+    "ai-adapters/README.md",
+    "ai-adapters/CLAUDE.md",
+    "ai-adapters/CODEX.md",
+    "ai-adapters/GEMINI.md",
+    "ai-adapters/COPILOT.md",
+    "ai-adapters/GROK.md",
+    "ai-adapters/WINDSURF.md",
+    "ai-adapters/GENERIC-AGENT.md",
+    "ai-adapters/BUILDER-INGESTION.md",
+    ".github/copilot-instructions.md",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/ISSUE_TEMPLATE/bug_report.md",
+    ".github/ISSUE_TEMPLATE/feature_request.md",
+    ".github/ISSUE_TEMPLATE/benchmark_fixture.md",
+    ".github/workflows/validate.yml",
+    ".devcontainer/devcontainer.json",
+    "MANIFESTO.md",
+    "docs/01-manifesto.md",
+    "docs/02-methodology.md",
+    "docs/04-prompt-construction-protocol.md",
+    "docs/12-builder-ingestion-protocol.md",
+    "docs/14-vertical-blueprint-contracts.md",
+    "docs/15-model-execution-principles.md",
+    "docs/16-cross-tool-ingestion-matrix.md",
+    "docs/22-harness-roadmap.md",
+    "docs/18-evaluation-scorecards.md",
+    "docs/18-scoring-and-evaluation-limits.md",
+    "docs/19-english-core-roadmap.md",
+    "docs/20-artifact-toolkit-model.md",
+    "docs/21-command-model.md",
+    "docs/25-english-public-index.md",
+    "docs/26-continuous-specification-enforcement.md",
+    "docs/27-end-to-end-walkthrough.md",
+    "docs/28-continuous-specification-enforcement.md",
+    ".specify/memory/constitution.md",
+    ".specify/templates/overrides/checklist-template.md",
+    ".specify/templates/overrides/analysis-template.md",
+    ".specify/templates/overrides/spec-template.md",
+    ".specify/templates/overrides/plan-template.md",
+    ".specify/templates/overrides/tasks-template.md",
+    "blueprints/02-full-project-blueprint.md",
+    "blueprints/03-targeted-change-blueprint.md",
+    "blueprints/12-targeted-change-blueprint.md",
+    "scorecards/implementation-scorecard.md",
+    "scorecards/targeted-change-scorecard.md",
+    "scorecards/spec-enforcement-scorecard.md",
+    "scorecards/continuous-enforcement-scorecard.md",
+    "skills/specification-driven-coding/SKILL.md",
+    "tools/sdc.py",
+    "tools/sdc_demo.py",
+    "tools/sdc_enforce.py",
+    "sdc_cli/__init__.py",
+    "sdc_cli/__main__.py",
+    "tools/sdc_harness.py",
+    "benchmarks/fixtures/001-builder-habit-dashboard/raw-prompt.md",
+    "benchmarks/fixtures/001-builder-habit-dashboard/sdc-prompt.md",
+    "benchmarks/fixtures/001-builder-habit-dashboard/expected.json",
+    "benchmarks/golden/001-builder-habit-dashboard/intake.md",
+    "benchmarks/golden/001-builder-habit-dashboard/spec.md",
+    "benchmarks/golden/001-builder-habit-dashboard/blueprint.md",
+    "benchmarks/golden/001-builder-habit-dashboard/plan.md",
+    "benchmarks/golden/001-builder-habit-dashboard/tasks.md",
+    "benchmarks/golden/001-builder-habit-dashboard/scorecard.md",
+    "case-studies/001-raw-vs-sdc-builder-prompt.md",
+    "case-studies/README.md",
+    "demos/README.md",
+    "demos/001-builder-habit-dashboard-walkthrough.md",
+    "examples/enforcement-smoke/artifact-manifest.json",
+    "examples/enforcement-smoke/spec.md",
+    "examples/enforcement-smoke/blueprint.md",
+    "examples/enforcement-smoke/plan.md",
+    "examples/enforcement-smoke/tasks.md",
+    "examples/enforcement-smoke/scorecard.md",
+    "examples/enforcement-smoke/app.py",
+]
+
+REQUIRED_SDC_COMMAND_PROMPTS = {
+    "/sdc.constitution": ["prompts/constitution.prompt.md"],
+    "/sdc.intake": ["prompts/intake.prompt.md"],
+    "/sdc.specify": ["prompts/write-master-spec.prompt.md"],
+    "/sdc.clarify": ["prompts/clarify.prompt.md"],
+    "/sdc.profile": ["prompts/select-project-profile.prompt.md"],
+    "/sdc.blueprint": ["prompts/write-vertical-blueprint.prompt.md"],
+    "/sdc.plan": ["prompts/write-plan.prompt.md"],
+    "/sdc.tasks": ["prompts/generate-tasks.prompt.md"],
+    "/sdc.checklist": ["prompts/checklist.prompt.md"],
+    "/sdc.analyze": ["prompts/analyze.prompt.md"],
+    "/sdc.implement": ["prompts/implement.prompt.md"],
+    "/sdc.score": ["prompts/evaluate-deliverable-scorecard.prompt.md"],
+    "/sdc.iterate": ["prompts/iterate.prompt.md"],
+}
+
+REQUIRED_BLUEPRINT_SECTIONS = [
+    "Role contract",
+    "Output",
+]
+
+PROVENANCE_PATTERNS = [
+    "Chat" + "GPT",
+    "G" + "PT-5",
+    "G" + "PT 5",
+    "modello " + "5.5",
+    "prompt " + "iniziale" + r" dell['’]" + "utente",
+    "utente" + " ha " + "richiesto",
+    "created" + " by " + "Chat" + "GPT",
+    "generated" + " by " + "Chat" + "GPT",
+    "generato da " + "Chat" + "GPT",
+    "creato da " + "Chat" + "GPT",
+    "file" + " eseguito",
+]
+
+WRONG_NAME_PATTERNS = [
+    r"\b" + "Spec" + r"\s+" + "Coding" + r"\b",
+    r"\b" + "spec" + r"\s+" + "coding" + r"\b",
+    r"\b" + "Specify" + r"\s+" + "Coding" + r"\b",
+    r"\b" + "specify" + r"\s+" + "coding" + r"\b",
+    r"\b" + "Specifical" + r"\s+" + "Coding" + r"\b",
+    r"\b" + "specifical" + r"\s+" + "coding" + r"\b",
+]
+
+ALLOWED_BINARY_SUFFIXES = {".zip", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf"}
+
+OFFICIAL_PIPELINE_STAGES = [
+    "Raw request",
+    "Intake",
+    "Specification",
+    "Project Profile Selection",
+    "Vertical Blueprint",
+    "Plan",
+    "Tasks",
+    "Implementation",
+    "Evaluation Scorecard",
+    "Release/Iteration",
+]
+
+PIPELINE_KEY_FILES = [
+    "README.md",
+    "AGENTS.md",
+    "ai-adapters/CLAUDE.md",
+    "ai-adapters/CODEX.md",
+    "ai-adapters/GEMINI.md",
+    "ai-adapters/COPILOT.md",
+    "ai-adapters/GROK.md",
+    "ai-adapters/WINDSURF.md",
+    "ai-adapters/GENERIC-AGENT.md",
+    "ai-adapters/BUILDER-INGESTION.md",
+    ".github/copilot-instructions.md",
+    "docs/02-methodology.md",
+    "docs/13-blueprint-compiler.md",
+    "docs/14-vertical-blueprint-contracts.md",
+    "docs/16-cross-tool-ingestion-matrix.md",
+    "docs/20-artifact-toolkit-model.md",
+    "docs/21-command-model.md",
+    "skills/specification-driven-coding/SKILL.md",
+    "prompts/write-vertical-blueprint.prompt.md",
+    "prompts/write-plan.prompt.md",
+    "prompts/generate-tasks.prompt.md",
+    "blueprints/README.md",
+    "plugins/README.md",
+]
+
+FORBIDDEN_PIPELINE_PATTERNS = [
+    r"spec(?:\.md)?\s+e\s+plan(?:\.md)?\s+in\s+un\s+blueprint",
+    r"Plan\s*[-–—>→]+\s*Tasks\s*[-–—>→]+\s*Vertical Blueprint",
+    r"Plan\.\s*Tasks\.\s*Vertical blueprint",
+]
+
+
+def fail(msg: str) -> None:
+    print(f"FAIL: {msg}")
+    sys.exit(1)
+
+
+def text_files():
+    for path in ROOT.rglob("*"):
+        if path.is_file() and path.suffix.lower() not in ALLOWED_BINARY_SUFFIXES and ".git" not in path.parts:
+            yield path
+
+
+def has_official_pipeline(text: str) -> bool:
+    """Return true when the official stages appear in the required order."""
+    normalized = text.lower()
+    position = -1
+    for stage in OFFICIAL_PIPELINE_STAGES:
+        found = normalized.find(stage.lower(), position + 1)
+        if found == -1:
+            return False
+        position = found
+    return True
+
+
+def check_pipeline_consistency() -> int:
+    issues = 0
+    for rel in PIPELINE_KEY_FILES:
+        path = ROOT / rel
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if not has_official_pipeline(text):
+            print(f"PIPELINE: {rel} does not contain the official pipeline order")
+            issues += 1
+    for path in text_files():
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for pattern in FORBIDDEN_PIPELINE_PATTERNS:
+            if re.search(pattern, text, flags=re.IGNORECASE | re.DOTALL):
+                print(f"PIPELINE: forbidden order found in {path.relative_to(ROOT)}: {pattern}")
+                issues += 1
+    return issues
+
+
+def check_sdc_cli_mapping() -> int:
+    """Keep the executable command surface aligned with prompt commands."""
+    path = ROOT / "tools/sdc.py"
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    issues = 0
+    for command, rels in REQUIRED_SDC_COMMAND_PROMPTS.items():
+        if command not in text:
+            print(f"CLI: tools/sdc.py missing command {command}")
+            issues += 1
+        if not any(rel in text for rel in rels):
+            print(f"CLI: tools/sdc.py missing prompt mapping for {command}: {', '.join(rels)}")
+            issues += 1
+    for utility in ["tools/sdc_demo.py", "tools/sdc_enforce.py", "demo", "enforce"]:
+        if utility not in text:
+            print(f"CLI: tools/sdc.py missing utility mapping for {utility}")
+            issues += 1
+    return issues
+
+
+def check_enforcement_surface() -> int:
+    issues = 0
+    script = ROOT / "tools" / "sdc_enforce.py"
+    if script.exists():
+        text = script.read_text(encoding="utf-8", errors="ignore")
+        for required in ["CORE_ARTIFACTS", "IMPLEMENTATION_SUFFIXES", "allowed_decisions", "structural_only"]:
+            if required not in text:
+                print(f"ENFORCE: tools/sdc_enforce.py missing {required}")
+                issues += 1
+        if "subprocess" in text:
+            print("ENFORCE: tools/sdc_enforce.py must not shell out")
+            issues += 1
+    for rel in [
+        "README.md",
+        "README.it.md",
+        "tools/README.md",
+        "docs/21-command-model.md",
+        "docs/28-continuous-specification-enforcement.md",
+    ]:
+        text = (ROOT / rel).read_text(encoding="utf-8", errors="ignore")
+        if "sdc enforce" not in text and "sdc_enforce.py" not in text:
+            print(f"ENFORCE: {rel} missing enforcement command reference")
+            issues += 1
+    return issues
+
+
+def check_integrations_catalog() -> int:
+    path = ROOT / "integrations/catalog.json"
+    issues = 0
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        print(f"INTEGRATIONS: invalid JSON in {path.relative_to(ROOT)}: {exc}")
+        return 1
+
+    if not isinstance(payload, list):
+        print("INTEGRATIONS: catalog.json must contain a top-level list")
+        return 1
+
+    allowed_types = {
+        "generic-agent",
+        "cli-agent",
+        "editor-agent",
+        "app-builder",
+        "mcp-agent",
+        "repository-instruction",
+        "plugin-adapter",
+    }
+    required_keys = {
+        "id",
+        "name",
+        "file",
+        "type",
+        "requires_cli",
+        "supports_skills",
+        "primary_use",
+        "load_first",
+        "known_limits",
+        "output_contract",
+        "notes",
+    }
+    seen_ids: set[str] = set()
+
+    for index, entry in enumerate(payload, start=1):
+        if not isinstance(entry, dict):
+            print(f"INTEGRATIONS: entry {index} is not an object")
+            issues += 1
+            continue
+        missing = sorted(required_keys - set(entry))
+        if missing:
+            print(f"INTEGRATIONS: entry {index} missing keys: {', '.join(missing)}")
+            issues += 1
+        entry_id = entry.get("id")
+        if not isinstance(entry_id, str) or not entry_id:
+            print(f"INTEGRATIONS: entry {index} has invalid id")
+            issues += 1
+            continue
+        if entry_id in seen_ids:
+            print(f"INTEGRATIONS: duplicate id {entry_id}")
+            issues += 1
+        seen_ids.add(entry_id)
+        entry_type = entry.get("type")
+        if entry_type not in allowed_types:
+            print(f"INTEGRATIONS: invalid type for {entry_id}: {entry_type}")
+            issues += 1
+        file_path = entry.get("file")
+        if not isinstance(file_path, str) or not (ROOT / file_path).exists():
+            print(f"INTEGRATIONS: missing file for {entry_id}: {file_path}")
+            issues += 1
+        load_first = entry.get("load_first")
+        if not isinstance(load_first, list) or not load_first:
+            print(f"INTEGRATIONS: invalid load_first for {entry_id}")
+            issues += 1
+        else:
+            for rel in load_first:
+                if not isinstance(rel, str) or not (ROOT / rel).exists():
+                    print(f"INTEGRATIONS: invalid load_first path for {entry_id}: {rel}")
+                    issues += 1
+    return issues
+
+
+def check_extension_catalog() -> int:
+    path = ROOT / "extensions" / "catalog.json"
+    issues = 0
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        print(f"EXTENSIONS: invalid JSON in {path.relative_to(ROOT)}: {exc}")
+        return 1
+
+    if not isinstance(payload, list):
+        print("EXTENSIONS: catalog.json must contain a top-level list")
+        return 1
+
+    allowed_types = {
+        "benchmark-pack",
+        "adapter-pack",
+        "scorecard-pack",
+        "workflow-pack",
+        "language-pack",
+        "governance-pack",
+        "project-profile-pack",
+    }
+    allowed_status = {"core", "experimental", "planned"}
+    required_keys = {
+        "id",
+        "name",
+        "type",
+        "status",
+        "files",
+        "primary_use",
+        "requires",
+        "output_contract",
+        "known_limits",
+    }
+    forbidden_language = re.compile(
+        r"marketplace|auto-install|automatically install|remote registry|fetch from GitHub|package manager",
+        flags=re.IGNORECASE,
+    )
+    seen_ids: set[str] = set()
+
+    for index, entry in enumerate(payload, start=1):
+        if not isinstance(entry, dict):
+            print(f"EXTENSIONS: entry {index} is not an object")
+            issues += 1
+            continue
+        missing = sorted(required_keys - set(entry))
+        if missing:
+            print(f"EXTENSIONS: entry {index} missing keys: {', '.join(missing)}")
+            issues += 1
+        entry_id = entry.get("id")
+        if not isinstance(entry_id, str) or not entry_id:
+            print(f"EXTENSIONS: entry {index} has invalid id")
+            issues += 1
+            continue
+        if entry_id in seen_ids:
+            print(f"EXTENSIONS: duplicate id {entry_id}")
+            issues += 1
+        seen_ids.add(entry_id)
+        if entry.get("type") not in allowed_types:
+            print(f"EXTENSIONS: invalid type for {entry_id}: {entry.get('type')}")
+            issues += 1
+        if entry.get("status") not in allowed_status:
+            print(f"EXTENSIONS: invalid status for {entry_id}: {entry.get('status')}")
+            issues += 1
+        if forbidden_language.search(json.dumps(entry, ensure_ascii=False)):
+            print(f"EXTENSIONS: forbidden registry language for {entry_id}")
+            issues += 1
+        for key in ["files", "requires"]:
+            values = entry.get(key)
+            if not isinstance(values, list):
+                print(f"EXTENSIONS: {entry_id} has invalid {key}")
+                issues += 1
+                continue
+            for rel in values:
+                if not isinstance(rel, str) or not (ROOT / rel).exists():
+                    print(f"EXTENSIONS: {entry_id} references missing {key} path: {rel}")
+                    issues += 1
+        for key in ["primary_use", "output_contract", "known_limits"]:
+            if not isinstance(entry.get(key), str) or not entry.get(key, "").strip():
+                print(f"EXTENSIONS: {entry_id} has empty {key}")
+                issues += 1
+    return issues
+
+
+def project_profile_ids() -> set[str]:
+    ids: set[str] = set()
+    for path in (ROOT / "project-types").glob("[0-9][0-9]-*.md"):
+        ids.add(re.sub(r"^\d\d-", "", path.stem))
+    return ids
+
+
+def check_preset_catalog() -> int:
+    path = ROOT / "presets" / "catalog.json"
+    issues = 0
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        print(f"PRESETS: invalid JSON in {path.relative_to(ROOT)}: {exc}")
+        return 1
+
+    if not isinstance(payload, list):
+        print("PRESETS: catalog.json must contain a top-level list")
+        return 1
+
+    allowed_status = {"core", "experimental", "planned"}
+    required_keys = {
+        "id",
+        "name",
+        "status",
+        "project_profile",
+        "blueprints",
+        "prompts",
+        "scorecards",
+        "fixtures",
+        "best_for",
+        "agent_or_builder_targets",
+        "quality_gates",
+        "known_limits",
+    }
+    forbidden_language = re.compile(
+        r"marketplace|auto-install|automatically install|remote registry|fetch from GitHub|package manager",
+        flags=re.IGNORECASE,
+    )
+    fixture_ids = {path.name for path in (ROOT / "benchmarks" / "fixtures").iterdir() if path.is_dir()}
+    profile_ids = project_profile_ids()
+    seen_ids: set[str] = set()
+
+    for index, entry in enumerate(payload, start=1):
+        if not isinstance(entry, dict):
+            print(f"PRESETS: entry {index} is not an object")
+            issues += 1
+            continue
+        missing = sorted(required_keys - set(entry))
+        if missing:
+            print(f"PRESETS: entry {index} missing keys: {', '.join(missing)}")
+            issues += 1
+        entry_id = entry.get("id")
+        if not isinstance(entry_id, str) or not entry_id:
+            print(f"PRESETS: entry {index} has invalid id")
+            issues += 1
+            continue
+        if entry_id in seen_ids:
+            print(f"PRESETS: duplicate id {entry_id}")
+            issues += 1
+        seen_ids.add(entry_id)
+        if entry.get("status") not in allowed_status:
+            print(f"PRESETS: invalid status for {entry_id}: {entry.get('status')}")
+            issues += 1
+        if entry.get("project_profile") not in profile_ids:
+            print(f"PRESETS: invalid project_profile for {entry_id}: {entry.get('project_profile')}")
+            issues += 1
+        if forbidden_language.search(json.dumps(entry, ensure_ascii=False)):
+            print(f"PRESETS: forbidden registry language for {entry_id}")
+            issues += 1
+        for key in ["blueprints", "prompts", "scorecards"]:
+            values = entry.get(key)
+            if not isinstance(values, list):
+                print(f"PRESETS: {entry_id} has invalid {key}")
+                issues += 1
+                continue
+            for rel in values:
+                if not isinstance(rel, str) or not (ROOT / rel).exists():
+                    print(f"PRESETS: {entry_id} references missing {key} path: {rel}")
+                    issues += 1
+        fixtures = entry.get("fixtures")
+        if not isinstance(fixtures, list):
+            print(f"PRESETS: {entry_id} has invalid fixtures")
+            issues += 1
+        else:
+            for fixture in fixtures:
+                if fixture not in fixture_ids:
+                    print(f"PRESETS: {entry_id} references missing fixture: {fixture}")
+                    issues += 1
+        quality_gates = entry.get("quality_gates")
+        if not isinstance(quality_gates, list) or not quality_gates:
+            print(f"PRESETS: {entry_id} has empty quality_gates")
+            issues += 1
+        else:
+            for gate in quality_gates:
+                if not isinstance(gate, str) or len(gate.strip().split()) < 3:
+                    print(f"PRESETS: {entry_id} has non-concrete quality gate: {gate}")
+                    issues += 1
+        for key in ["best_for", "known_limits"]:
+            if not isinstance(entry.get(key), str) or not entry.get(key, "").strip():
+                print(f"PRESETS: {entry_id} has empty {key}")
+                issues += 1
+    return issues
+
+
+def check_github_instruction_files() -> int:
+    issues = 0
+    instructions_dir = ROOT / ".github" / "instructions"
+    if not instructions_dir.exists():
+        print("GITHUB: missing .github/instructions directory")
+        return 1
+
+    instruction_files = sorted(instructions_dir.glob("*.instructions.md"))
+    if not instruction_files:
+        print("GITHUB: no path-specific instruction files found")
+        return 1
+
+    for path in instruction_files:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if not text.startswith("---\n"):
+            print(f"GITHUB: {path.relative_to(ROOT)} missing frontmatter")
+            issues += 1
+            continue
+        end = text.find("\n---", 4)
+        if end == -1:
+            print(f"GITHUB: {path.relative_to(ROOT)} has unterminated frontmatter")
+            issues += 1
+            continue
+        frontmatter = text[4:end]
+        if not re.search(r"^applyTo:\s*.+", frontmatter, flags=re.MULTILINE):
+            print(f"GITHUB: {path.relative_to(ROOT)} missing applyTo frontmatter")
+            issues += 1
+        if "Specification-Driven Coding" not in text:
+            print(f"GITHUB: {path.relative_to(ROOT)} missing methodology name")
+            issues += 1
+    return issues
+
+
+def check_benchmark_fixtures() -> int:
+    issues = 0
+    fixtures_root = ROOT / "benchmarks" / "fixtures"
+    golden_root = ROOT / "benchmarks" / "golden"
+    required_golden = ["intake.md", "spec.md", "blueprint.md", "plan.md", "tasks.md", "scorecard.md"]
+    for fixture_dir in sorted(path for path in fixtures_root.iterdir() if path.is_dir()):
+        fixture = fixture_dir.name
+        expected_path = fixture_dir / "expected.json"
+        for name in ["raw-prompt.md", "sdc-prompt.md", "expected.json"]:
+            if not (fixture_dir / name).exists():
+                print(f"FIXTURE: {fixture} missing {name}")
+                issues += 1
+        if expected_path.exists():
+            try:
+                expected = json.loads(expected_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError as exc:
+                print(f"FIXTURE: {fixture} invalid expected.json: {exc}")
+                issues += 1
+                expected = {}
+            for key in ["project_profile", "anti_genericity_constraints", "acceptance_criteria", "stack_rationale", "quality_gates"]:
+                if not expected.get(key):
+                    print(f"FIXTURE: {fixture} missing expected key {key}")
+                    issues += 1
+        golden_dir = golden_root / fixture
+        for name in required_golden:
+            if not (golden_dir / name).exists():
+                print(f"FIXTURE: {fixture} missing golden {name}")
+                issues += 1
+    return issues
+
+
+def check_demo_surface() -> int:
+    issues = 0
+    required_paths = [
+        "tools/sdc_demo.py",
+        "demos/README.md",
+        "demos/001-builder-habit-dashboard-walkthrough.md",
+        "benchmarks/fixtures/001-builder-habit-dashboard",
+        "benchmarks/golden/001-builder-habit-dashboard",
+    ]
+    for rel in required_paths:
+        if not (ROOT / rel).exists():
+            print(f"DEMO: missing {rel}")
+            issues += 1
+
+    demo_script = ROOT / "tools" / "sdc_demo.py"
+    if demo_script.exists():
+        text = demo_script.read_text(encoding="utf-8", errors="ignore")
+        for required in ["FIXTURES", "GOLDEN", "001-builder-habit-dashboard", "format", "verbose", "markdown"]:
+            if required not in text:
+                print(f"DEMO: tools/sdc_demo.py missing {required}")
+                issues += 1
+        if "sdc_harness.py" in text:
+            print("DEMO: tools/sdc_demo.py must not call the harness")
+            issues += 1
+
+    proof_text = "This demo proves reproducible artifact discipline and anti-genericity constraints."
+    limit_text = "It does not prove universal product superiority without real builder comparison."
+    for rel in ["demos/README.md", "demos/001-builder-habit-dashboard-walkthrough.md"]:
+        path = ROOT / rel
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for required in [
+            "Specification-Driven Coding",
+            "Raw request -> Intake -> Specification -> Project Profile Selection -> Vertical Blueprint -> Plan -> Tasks -> Implementation -> Evaluation Scorecard -> Release/Iteration",
+            "benchmarks/fixtures/001-builder-habit-dashboard",
+            proof_text,
+            limit_text,
+        ]:
+            if required not in text:
+                print(f"DEMO: {rel} missing required text: {required}")
+                issues += 1
+    return issues
+
+
+
+def check_internal_links() -> int:
+    """Check Markdown links and backticked repository paths that point to concrete files."""
+    issues = 0
+    path_pattern = re.compile(r"`((?:docs|blueprints|scorecards|prompts|skills|project-types|tools|schemas|extensions|presets|integrations|benchmarks|demos|examples|case-studies|\.specify|\.github)/[^`]+?)`")
+    md_link_pattern = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+    for path in ROOT.rglob("*.md"):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for match in path_pattern.finditer(text):
+            target = match.group(1).split("#", 1)[0]
+            if "*" in target or "<" in target or target.endswith("/"):
+                continue
+            if not (ROOT / target).exists():
+                print(f"BROKEN: {path.relative_to(ROOT)} references missing {target}")
+                issues += 1
+        for match in md_link_pattern.finditer(text):
+            target = match.group(1).split("#", 1)[0]
+            if not target or target.startswith(("http://", "https://", "mailto:")):
+                continue
+            if not (path.parent / target).exists():
+                print(f"BROKEN: {path.relative_to(ROOT)} links missing {target}")
+                issues += 1
+    return issues
+
+def main() -> int:
+    for rel in REQUIRED_ROOT:
+        if not (ROOT / rel).exists():
+            fail(f"missing required file: {rel}")
+
+    for command, rels in REQUIRED_SDC_COMMAND_PROMPTS.items():
+        if not any((ROOT / rel).exists() for rel in rels):
+            fail(f"missing prompt for {command}: expected one of {', '.join(rels)}")
+
+    project_files = sorted((ROOT / "project-types").glob("[0-9][0-9]-*.md"))
+    if len(project_files) != 20:
+        fail(f"expected 20 project type files, found {len(project_files)}")
+
+    for path in project_files:
+        text = path.read_text(encoding="utf-8")
+        for section in REQUIRED_PROJECT_SECTIONS:
+            if section not in text:
+                fail(f"{path.relative_to(ROOT)} missing section {section}")
+        if "```text" not in text:
+            fail(f"{path.relative_to(ROOT)} missing prompt seed")
+
+    blueprint_files = sorted((ROOT / "blueprints").glob("*.md"))
+    if len(blueprint_files) < 7:
+        fail(f"expected at least 7 blueprint files, found {len(blueprint_files)}")
+
+    scorecard_files = sorted((ROOT / "scorecards").glob("*.md"))
+    if len(scorecard_files) < 4:
+        fail(f"expected at least 4 scorecard files, found {len(scorecard_files)}")
+
+    skill_files = sorted((ROOT / "skills").glob("*/SKILL.md"))
+    if len(skill_files) < 8:
+        fail(f"expected at least 8 skills, found {len(skill_files)}")
+
+    for path in text_files():
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for pattern in PROVENANCE_PATTERNS:
+            if re.search(pattern, text, flags=re.IGNORECASE):
+                fail(f"provenance-like phrase found in {path.relative_to(ROOT)}: {pattern}")
+        for pattern in WRONG_NAME_PATTERNS:
+            if re.search(pattern, text):
+                fail(f"wrong methodology name found in {path.relative_to(ROOT)}: {pattern}")
+
+    broken_links = check_internal_links()
+    if broken_links:
+        fail(f"found {broken_links} broken internal links")
+
+    pipeline_issues = check_pipeline_consistency()
+    if pipeline_issues:
+        fail(f"found {pipeline_issues} pipeline consistency issues")
+
+    cli_issues = check_sdc_cli_mapping()
+    if cli_issues:
+        fail(f"found {cli_issues} sdc CLI mapping issues")
+
+    enforcement_issues = check_enforcement_surface()
+    if enforcement_issues:
+        fail(f"found {enforcement_issues} enforcement surface issues")
+
+    integration_issues = check_integrations_catalog()
+    if integration_issues:
+        fail(f"found {integration_issues} integration catalog issues")
+
+    extension_issues = check_extension_catalog()
+    if extension_issues:
+        fail(f"found {extension_issues} extension catalog issues")
+
+    preset_issues = check_preset_catalog()
+    if preset_issues:
+        fail(f"found {preset_issues} preset catalog issues")
+
+    github_issues = check_github_instruction_files()
+    if github_issues:
+        fail(f"found {github_issues} GitHub instruction issues")
+
+    demo_issues = check_demo_surface()
+    if demo_issues:
+        fail(f"found {demo_issues} demo surface issues")
+
+    fixture_issues = check_benchmark_fixtures()
+    if fixture_issues:
+        fail(f"found {fixture_issues} benchmark fixture issues")
+
+    print("PASS: Specification-Driven Coding repo structure is valid")
+    print(f"Project profiles: {len(project_files)}")
+    print(f"Blueprints: {len(blueprint_files)}")
+    print(f"Scorecards: {len(scorecard_files)}")
+    print(f"Skills: {len(skill_files)}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,20 @@
+{
+  "project_profile": "dashboard-admin-bi",
+  "anti_genericity_constraints": [
+    "private, calm, and non-competitive",
+    "avoid generic SaaS cards"
+  ],
+  "acceptance_criteria": [
+    "create, complete, edit, and delete a habit",
+    "weekly progress is visible"
+  ],
+  "stack_rationale": [
+    "local-first",
+    "heavier backend defaults were rejected"
+  ],
+  "quality_gates": [
+    "privacy",
+    "testability",
+    "anti-genericity"
+  ]
+}

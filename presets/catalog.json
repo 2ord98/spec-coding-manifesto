@@ -1,0 +1,205 @@
+[
+  {
+    "id": "sdc.preset.builder-product",
+    "name": "Builder Product",
+    "status": "core",
+    "project_profile": "full-stack-saas",
+    "blueprints": [
+      "blueprints/01-ai-builder-master-blueprint.md",
+      "blueprints/02-full-project-blueprint.md"
+    ],
+    "prompts": [
+      "prompts/builder-ingestion.prompt.md",
+      "prompts/compile-to-builder-blueprint.prompt.md",
+      "prompts/write-vertical-blueprint.prompt.md"
+    ],
+    "scorecards": [
+      "scorecards/blueprint-scorecard.md",
+      "scorecards/implementation-scorecard.md"
+    ],
+    "fixtures": [
+      "002-b2b-leave-management"
+    ],
+    "best_for": "App builders or coding agents turning incomplete product intent into a specific full-stack SaaS execution contract.",
+    "agent_or_builder_targets": [
+      "app-builder",
+      "generic-agent",
+      "cli-agent"
+    ],
+    "quality_gates": [
+      "Vertical Blueprint before final plan and tasks",
+      "stack rationale with rejected default",
+      "anti-genericity constraints tied to domain workflow",
+      "scorecard before release"
+    ],
+    "known_limits": "Does not choose a stack automatically and does not generate a finished product by itself."
+  },
+  {
+    "id": "sdc.preset.targeted-change-brownfield",
+    "name": "Targeted Change Brownfield",
+    "status": "core",
+    "project_profile": "developer-tool-cli-mcp",
+    "blueprints": [
+      "blueprints/12-targeted-change-blueprint.md"
+    ],
+    "prompts": [
+      "prompts/targeted-change.prompt.md",
+      "prompts/brownfield.prompt.md",
+      "prompts/audit-before-implementation.prompt.md"
+    ],
+    "scorecards": [
+      "scorecards/targeted-change-scorecard.md"
+    ],
+    "fixtures": [],
+    "best_for": "Small brownfield fixes where the agent must inspect before edit, identify exact files, and avoid broad refactors.",
+    "agent_or_builder_targets": [
+      "cli-agent",
+      "editor-agent"
+    ],
+    "quality_gates": [
+      "inspect before edit",
+      "probable cause stated before patch",
+      "minimal patch only",
+      "relevant validation run",
+      "rollback path documented"
+    ],
+    "known_limits": "Not appropriate for greenfield product generation or large architecture redesign."
+  },
+  {
+    "id": "sdc.preset.internal-pdf-rag",
+    "name": "Internal PDF RAG Assistant",
+    "status": "core",
+    "project_profile": "rag-knowledge-assistant",
+    "blueprints": [
+      "blueprints/02-full-project-blueprint.md",
+      "blueprints/08-rag-system-blueprint.md"
+    ],
+    "prompts": [
+      "prompts/rag-evaluation.prompt.md",
+      "prompts/write-vertical-blueprint.prompt.md",
+      "prompts/evaluate-deliverable-scorecard.prompt.md"
+    ],
+    "scorecards": [
+      "scorecards/implementation-scorecard.md"
+    ],
+    "fixtures": [
+      "003-internal-pdf-rag-assistant"
+    ],
+    "best_for": "Internal document assistants that must answer from approved PDFs with citations, access control, refusal behavior, and freshness rules.",
+    "agent_or_builder_targets": [
+      "cli-agent",
+      "mcp-agent",
+      "app-builder"
+    ],
+    "quality_gates": [
+      "citation accuracy checked against source chunks",
+      "unsupported answers refused with no invented citations",
+      "access-control filtering enforced before retrieval",
+      "document freshness and versioning",
+      "evaluation set with expected evidence"
+    ],
+    "known_limits": "Structural evaluation only unless paired with a separate semantic review process."
+  },
+  {
+    "id": "sdc.preset.b2b-internal-saas",
+    "name": "B2B Internal SaaS",
+    "status": "core",
+    "project_profile": "full-stack-saas",
+    "blueprints": [
+      "blueprints/02-full-project-blueprint.md"
+    ],
+    "prompts": [
+      "prompts/intake.prompt.md",
+      "prompts/select-project-profile.prompt.md",
+      "prompts/write-plan.prompt.md",
+      "prompts/generate-tasks.prompt.md"
+    ],
+    "scorecards": [
+      "scorecards/implementation-scorecard.md"
+    ],
+    "fixtures": [
+      "002-b2b-leave-management"
+    ],
+    "best_for": "Internal SaaS workflows with roles, approvals, persistent state, privacy, and audit requirements.",
+    "agent_or_builder_targets": [
+      "cli-agent",
+      "editor-agent",
+      "app-builder"
+    ],
+    "quality_gates": [
+      "explicit RBAC for employee and manager actions",
+      "audit trail for sensitive transitions",
+      "privacy-safe shared visibility",
+      "domain-specific data invariants",
+      "payroll or unrelated suite scope rejected"
+    ],
+    "known_limits": "Does not include payroll, HRIS, billing, or enterprise integration scope unless specified."
+  },
+  {
+    "id": "sdc.preset.multi-agent-control",
+    "name": "Multi-Agent Control",
+    "status": "core",
+    "project_profile": "multi-agent-control-system",
+    "blueprints": [
+      "blueprints/05-multi-agent-system-blueprint.md"
+    ],
+    "prompts": [
+      "prompts/multi-agent-blueprint.prompt.md",
+      "prompts/parallel-implementations.prompt.md",
+      "prompts/final-audit-retrospec.prompt.md"
+    ],
+    "scorecards": [
+      "scorecards/multi-agent-scorecard.md"
+    ],
+    "fixtures": [],
+    "best_for": "Governed multi-agent workflows where roles, permissions, tools, stop conditions, and release gates must be explicit.",
+    "agent_or_builder_targets": [
+      "generic-agent",
+      "cli-agent",
+      "mcp-agent"
+    ],
+    "quality_gates": [
+      "role boundaries declared for every agent",
+      "tool permission gates",
+      "reviewer ownership assigned before implementation",
+      "stop conditions documented before tool use",
+      "release or rollback decision"
+    ],
+    "known_limits": "Does not grant autonomous authority for destructive actions or sensitive external tool use."
+  },
+  {
+    "id": "sdc.preset.local-first-personal-app",
+    "name": "Local-First Personal App",
+    "status": "core",
+    "project_profile": "dashboard-admin-bi",
+    "blueprints": [
+      "blueprints/02-full-project-blueprint.md",
+      "blueprints/06-web-product-blueprint.md"
+    ],
+    "prompts": [
+      "prompts/intake.prompt.md",
+      "prompts/write-vertical-blueprint.prompt.md",
+      "prompts/evaluate-deliverable-scorecard.prompt.md"
+    ],
+    "scorecards": [
+      "scorecards/implementation-scorecard.md"
+    ],
+    "fixtures": [
+      "001-builder-habit-dashboard"
+    ],
+    "best_for": "Small privacy-sensitive personal tools that should stay local-first unless account or sync requirements are explicit.",
+    "agent_or_builder_targets": [
+      "app-builder",
+      "editor-agent",
+      "cli-agent"
+    ],
+    "quality_gates": [
+      "local-first rationale documented before stack selection",
+      "no unnecessary auth or hosted database",
+      "privacy note attached to stored personal data",
+      "domain-specific workflow cards only",
+      "simple validation without paid services"
+    ],
+    "known_limits": "Not suitable for team collaboration or multi-device sync without additional requirements."
+  }
+]

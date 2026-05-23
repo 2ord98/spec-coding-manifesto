@@ -1,0 +1,25 @@
+name: validate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  specification-driven-coding-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python tools/spec_lint.py
+      - run: python tools/sdc.py doctor
+      - run: python tools/sdc.py doctor --quick
+      - run: python tools/sdc_enforce.py check --path benchmarks/golden/001-builder-habit-dashboard
+      - run: python tools/score_blueprint.py blueprints/02-full-project-blueprint.md
+      - run: python tools/sdc_harness.py run --all
+      - run: python -m json.tool schemas/specification-driven-coding-spec.schema.json
+      - run: python -m json.tool schemas/vertical-blueprint.schema.json
+      - run: python -m json.tool extensions/catalog.json
+      - run: python -m json.tool presets/catalog.json
+      - run: python -m json.tool .devcontainer/devcontainer.json

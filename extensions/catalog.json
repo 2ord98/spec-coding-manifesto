@@ -1,0 +1,122 @@
+[
+  {
+    "id": "sdc.extension.benchmark-fixture-pack",
+    "name": "Benchmark Fixture Pack",
+    "type": "benchmark-pack",
+    "status": "core",
+    "files": [
+      "benchmarks/README.md",
+      "benchmarks/fixtures/001-builder-habit-dashboard/expected.json",
+      "benchmarks/fixtures/002-b2b-leave-management/expected.json",
+      "benchmarks/fixtures/003-internal-pdf-rag-assistant/expected.json",
+      "tools/sdc_harness.py"
+    ],
+    "primary_use": "Run reproducible structural checks against raw prompts, Specification-Driven Coding prompts, and golden artifacts.",
+    "requires": [
+      "benchmarks/golden/001-builder-habit-dashboard/scorecard.md",
+      "benchmarks/golden/002-b2b-leave-management/scorecard.md",
+      "benchmarks/golden/003-internal-pdf-rag-assistant/scorecard.md"
+    ],
+    "output_contract": "Harness report with fixture completeness, golden artifact coverage, scorecard shape, and explicit structural limitations.",
+    "known_limits": "Structural benchmark only; it does not prove semantic product quality."
+  },
+  {
+    "id": "sdc.extension.integration-adapter-pack",
+    "name": "Integration Adapter Pack",
+    "type": "adapter-pack",
+    "status": "core",
+    "files": [
+      "integrations/catalog.json",
+      "ai-adapters/README.md",
+      "plugins/README.md",
+      "plugins/agents-md.md",
+      "plugins/mcp-tooling.md"
+    ],
+    "primary_use": "Discover how agents, app builders, and plugin adapters ingest or route the repository.",
+    "requires": [
+      "AGENTS.md",
+      "docs/16-cross-tool-ingestion-matrix.md"
+    ],
+    "output_contract": "Adapter selection with source-of-truth files, load order, known limits, and required output contract.",
+    "known_limits": "Discovery metadata only; tool behavior still depends on the target environment."
+  },
+  {
+    "id": "sdc.extension.rag-evaluation-pack",
+    "name": "RAG Evaluation Pack",
+    "type": "scorecard-pack",
+    "status": "core",
+    "files": [
+      "project-types/07-rag-knowledge-assistant.md",
+      "blueprints/08-rag-system-blueprint.md",
+      "prompts/rag-evaluation.prompt.md",
+      "benchmarks/fixtures/003-internal-pdf-rag-assistant/expected.json",
+      "benchmarks/golden/003-internal-pdf-rag-assistant/scorecard.md"
+    ],
+    "primary_use": "Constrain and evaluate internal document assistants with citations, refusal behavior, access control, freshness, and privacy requirements.",
+    "requires": [
+      "docs/07-context-grounding.md",
+      "scorecards/implementation-scorecard.md"
+    ],
+    "output_contract": "Evaluation Scorecard covering groundedness, citation accuracy, refusal behavior, privacy, freshness, anti-genericity, and residual risks.",
+    "known_limits": "Does not provide an LLM-based semantic judge by default."
+  },
+  {
+    "id": "sdc.extension.targeted-change-pack",
+    "name": "Targeted Change Pack",
+    "type": "workflow-pack",
+    "status": "core",
+    "files": [
+      "blueprints/12-targeted-change-blueprint.md",
+      "prompts/targeted-change.prompt.md",
+      "prompts/write-targeted-change-blueprint.prompt.md",
+      "scorecards/targeted-change-scorecard.md"
+    ],
+    "primary_use": "Guide bug fixes, small features, UI changes, config fixes, documentation updates, security patches, and dependency updates.",
+    "requires": [
+      "docs/16-task-and-project-modes.md",
+      "prompts/audit-before-implementation.prompt.md"
+    ],
+    "output_contract": "Targeted change package with inspect-before-edit, probable cause, exact files, minimal patch, validation, rollback, and reduced scorecard.",
+    "known_limits": "Not intended for full-project generation or broad refactors."
+  },
+  {
+    "id": "sdc.extension.language-companion-pack",
+    "name": "Language Companion Pack",
+    "type": "language-pack",
+    "status": "core",
+    "files": [
+      "docs/25-english-public-index.md",
+      "README.it.md",
+      "MANIFESTO.it.md",
+      "CONTRIBUTING.it.md"
+    ],
+    "primary_use": "Keep English public entry points aligned with Italian companion documents.",
+    "requires": [
+      "README.md",
+      "MANIFESTO.md",
+      "CONTRIBUTING.md"
+    ],
+    "output_contract": "Language policy and public-doc alignment notes without translating every internal Markdown file.",
+    "known_limits": "Does not make the full repository bilingual."
+  },
+  {
+    "id": "sdc.extension.multi-agent-governance-pack",
+    "name": "Multi-Agent Governance Pack",
+    "type": "governance-pack",
+    "status": "core",
+    "files": [
+      "docs/08-agent-governance.md",
+      "docs/17-agent-execution-discipline.md",
+      "blueprints/05-multi-agent-system-blueprint.md",
+      "prompts/multi-agent-blueprint.prompt.md",
+      "scorecards/multi-agent-scorecard.md"
+    ],
+    "primary_use": "Constrain multi-agent work with roles, permissions, stop conditions, governance, and release gates.",
+    "requires": [
+      "project-types/09-multi-agent-control-system.md",
+      "skills/multi-agent-control-system/SKILL.md"
+    ],
+    "output_contract": "Governed multi-agent blueprint with role contracts, allowed tools, forbidden tools, review gates, scorecard, and residual risks.",
+    "known_limits": "Does not grant agents extra authority or automate sensitive tool approvals."
+  }
+]

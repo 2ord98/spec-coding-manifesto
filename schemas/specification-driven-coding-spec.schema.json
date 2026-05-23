@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Specification-Driven Coding Spec Header",
+  "type": "object",
+  "required": [
+    "project_profile",
+    "primary_user",
+    "specific_problem",
+    "non_goals",
+    "anti_genericity_constraints",
+    "acceptance_criteria"
+  ],
+  "properties": {
+    "project_profile": {
+      "type": "string"
+    },
+    "primary_user": {
+      "type": "string"
+    },
+    "specific_problem": {
+      "type": "string"
+    },
+    "non_goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "anti_genericity_constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

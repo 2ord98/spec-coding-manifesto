@@ -1,0 +1,25 @@
+{
+  "project_profile": "full-stack-saas",
+  "anti_genericity_constraints": [
+    "business leave workflow, not a generic SaaS dashboard",
+    "no payroll system",
+    "privacy-safe shared calendar visibility"
+  ],
+  "acceptance_criteria": [
+    "employee can create and submit a leave request",
+    "manager can approve or reject a request",
+    "shared calendar shows approved leave with privacy controls"
+  ],
+  "stack_rationale": [
+    "conventional full-stack monolith",
+    "relational data model with explicit RBAC",
+    "payroll scope was rejected"
+  ],
+  "quality_gates": [
+    "privacy",
+    "permissions",
+    "auditability",
+    "testability",
+    "anti-genericity"
+  ]
+}

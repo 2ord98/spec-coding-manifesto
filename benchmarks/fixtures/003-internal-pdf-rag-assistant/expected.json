@@ -1,0 +1,36 @@
+{
+  "project_profile": "rag-knowledge-assistant",
+  "anti_genericity_constraints": [
+    "controlled internal knowledge assistant, not a generic public chatbot",
+    "no silent answer synthesis without citations",
+    "do not pick a default chat stack without declaring corpus boundaries, retrieval strategy, and evaluation"
+  ],
+  "acceptance_criteria": [
+    "internal PDFs can be ingested into a declared chunking and embedding pipeline",
+    "every supported answer includes citations to internal documents",
+    "unsupported or out-of-scope questions are refused explicitly",
+    "freshness, versioning, and stale-document behavior are defined"
+  ],
+  "stack_rationale": [
+    "RAG architecture with explicit ingestion, chunking, embeddings, vector index, retrieval, and answer-grounding rules",
+    "internet search or external browsing fallback was rejected",
+    "generic chatbot defaults were rejected"
+  ],
+  "quality_gates": [
+    "groundedness",
+    "citation accuracy",
+    "refusal behavior",
+    "privacy",
+    "anti-genericity"
+  ],
+  "security_requirements": [
+    "access control by document class or audience",
+    "no leakage of sensitive text across roles",
+    "minimum metadata for audit and versioning"
+  ],
+  "evaluation_requirements": [
+    "evaluation set",
+    "expected evidence",
+    "unsupported question handling"
+  ]
+}

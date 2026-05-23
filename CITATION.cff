@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+title: "Specification-Driven Coding: spec-coding-manifesto"
+message: "If you use this manifesto or templates, cite this repository."
+authors:
+  - family-names: "Cassiani"
+    given-names: "Lorenzo"
+version: "0.2.0"
+date-released: "2026-05-22"
+license: "MIT"

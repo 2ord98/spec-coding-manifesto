@@ -1,0 +1,14 @@
+{
+  "name": "Specification-Driven Coding",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot",
+        "ms-python.python"
+      ]
+    }
+  },
+  "postCreateCommand": "python3 tools/sdc.py doctor --quick",
+  "remoteUser": "vscode"
+}

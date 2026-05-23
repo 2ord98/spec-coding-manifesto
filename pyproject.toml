@@ -1,0 +1,23 @@
+[project]
+name = "spec-coding-manifesto"
+version = "0.5.0"
+description = "Manifesto and operational kit for Specification-Driven Coding: specific, project-anchored AI product generation."
+requires-python = ">=3.10"
+readme = "README.md"
+license = { text = "MIT" }
+
+[project.scripts]
+sdc = "sdc_cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["sdc_cli*"]
+
+[tool.specification-driven-coding]
+project_profiles = "project-types"
+blueprints = "blueprints"
+scorecards = "scorecards"
+templates = ".specify/templates/overrides"

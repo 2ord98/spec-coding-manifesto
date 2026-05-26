@@ -2,7 +2,7 @@
 
 Gli script non richiedono dipendenze esterne.
 
-Consumer no-install mode from another project:
+Modalità consumer senza installazione da un altro progetto:
 
 ```bash
 cd my-project
@@ -11,7 +11,7 @@ python3 .sdc/tools/sdc.py doctor --quick
 python3 .sdc/tools/sdc.py init "my project" --type marketing-site-cms --out "$PWD/sdc-workspace"
 ```
 
-Repository contributor mode:
+Modalità contributor repository:
 
 ```bash
 pip install -e .
@@ -60,7 +60,7 @@ python3 tools/spec_scaffold.py --list
 python3 tools/score_blueprint.py blueprints/02-full-project-blueprint.md
 ```
 
-`pip install -e .sdc` is optional for consumer projects and may create local `.egg-info` metadata. Prefer `python3 .sdc/tools/sdc.py ...` for deterministic no-install usage. If a global `sdc` command is available, it searches upward for the nearest embedded `.sdc/tools/sdc.py` before falling back to contributor checkout behavior.
+`pip install -e .sdc` è opzionale per i consumer project e può creare metadati `.egg-info` locali. Preferisci `python3 .sdc/tools/sdc.py ...` per uso deterministico senza installazione. Se è disponibile un comando globale `sdc`, cerca verso l'alto la checkout `.sdc/tools/sdc.py` incorporata più vicina prima di usare il fallback da checkout contributor.
 
 - `sdc.py`: espone una command surface leggera per `/sdc.*`, stampa/ispeziona i prompt, elenca integration, extension e preset registry, delega scaffold, demo, harness e verifica lo stato della repo. `doctor` esegue tutte le fixture; `doctor --quick` usa il percorso smoke rapido.
 - `sdc_cli`: wrapper installabile che espone lo stesso comando come `sdc` tramite `pyproject.toml`.

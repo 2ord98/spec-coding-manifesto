@@ -248,7 +248,7 @@ python3 .sdc/tools/sdc.py doctor --quick
 python3 .sdc/tools/sdc.py init "my project" --type marketing-site-cms --out "$PWD/sdc-workspace"
 ```
 
-L'entrypoint `sdc` e pensata soprattutto per contributor mode e checkout `.sdc` incorporate. Questa release non impacchetta l'intera repository come tool remoto standalone e non installa automaticamente gli asset fuori dalla checkout.
+L'entrypoint `sdc` è pensato soprattutto per contributor mode e checkout `.sdc` incorporate. Questa release non impacchetta l'intera repository come tool remoto standalone e non installa automaticamente gli asset fuori dalla checkout.
 
 `init` accetta sia `--name` sia una forma shorthand posizionale. Se `--type` manca, la CLI fallisce con un esempio esplicito invece di scaffoldingare in modo implicito.
 
@@ -267,7 +267,7 @@ sdc enforce check --path benchmarks/golden/001-builder-habit-dashboard
 sdc enforce check --workspace examples/enforcement-smoke --format json
 ```
 
-Lo strumento di enforcement e strutturale e usa solo stdlib. Segnala rischi di allineamento; non prova correttezza semantica.
+Lo strumento di enforcement è strutturale e usa solo stdlib. Segnala rischi di allineamento; non prova correttezza semantica.
 
 ## GitHub e Copilot
 
@@ -277,9 +277,9 @@ La repository include un layer GitHub leggero:
 - `.github/instructions/` aggiunge istruzioni Copilot path-specific per docs, file Python CLI, benchmark, blueprint, prompt, scorecard e skills.
 - `.github/workflows/validate.yml` esegue la validazione in GitHub Actions.
 - `.github/PULL_REQUEST_TEMPLATE.md` e `.github/ISSUE_TEMPLATE/` mantengono i contributi allineati a pipeline e validation gate.
-- `.devcontainer/devcontainer.json` e opzionale per Codespaces/devcontainer e facilita i check locali.
+- `.devcontainer/devcontainer.json` è opzionale per Codespaces/devcontainer e facilita i check locali.
 
-L'integrazione GitHub non e obbligatoria. `AGENTS.md` resta l'entrypoint generico per agenti, e gli stessi artifact funzionano con altri coding agent, app builder, workflow MCP e uso CLI locale.
+L'integrazione GitHub non è obbligatoria. `AGENTS.md` resta l'entrypoint generico per agenti, e gli stessi artifact funzionano con altri coding agent, app builder, workflow MCP e uso CLI locale.
 
 ## Benchmark e harness
 

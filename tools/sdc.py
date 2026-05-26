@@ -416,6 +416,25 @@ def compile_workspace(args: argparse.Namespace) -> int:
     return run(command)
 
 
+def handoff_workspace(args: argparse.Namespace) -> int:
+    command = [PYTHON, "tools/sdc_handoff.py", "handoff", "--workspace", args.workspace]
+    if args.target:
+        command.extend(["--target", args.target])
+    if args.role:
+        command.extend(["--role", args.role])
+    if args.scope:
+        command.extend(["--scope", args.scope])
+    if args.format:
+        command.extend(["--format", args.format])
+    if args.copy:
+        command.append("--copy")
+    if args.out:
+        command.extend(["--out", args.out])
+    if args.dry_run:
+        command.append("--dry-run")
+    return run(command)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Specification-Driven Coding command surface")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -479,6 +498,47 @@ def main(argv: list[str] | None = None) -> int:
     compile_parser.add_argument("--dry-run", action="store_true", help="print output summary without writing files")
     compile_parser.add_argument("--force", action="store_true", help="overwrite scaffold/generated sections")
 
+    handoff_parser = subparsers.add_parser("handoff", help="assemble deterministic agent/builder handoff prompt")
+    handoff_parser.add_argument("--workspace", required=True, help="SDC workspace spec folder")
+    handoff_parser.add_argument(
+        "--target",
+        choices=["generic", "codex", "claude-code", "cursor", "aider", "gemini-cli", "builder", "mcp"],
+        default="generic",
+        help="target CLI or builder",
+    )
+    handoff_parser.add_argument(
+        "--role",
+        choices=[
+            "auto",
+            "architect",
+            "engineer",
+            "reviewer",
+            "optimizer",
+            "debugger",
+            "performance",
+            "security",
+            "techlead",
+            "devops",
+            "frontend",
+            "ai",
+            "startup",
+            "refactor",
+            "requirements",
+        ],
+        default="auto",
+        help="role prompt to apply",
+    )
+    handoff_parser.add_argument(
+        "--scope",
+        choices=["auto", "blueprint", "implement", "review", "debug", "refactor", "deploy", "security", "performance"],
+        default="auto",
+        help="handoff scope",
+    )
+    handoff_parser.add_argument("--format", choices=["text", "markdown", "json"], default="markdown", help="output format")
+    handoff_parser.add_argument("--copy", action="store_true", help="copy prompt to clipboard when available")
+    handoff_parser.add_argument("--out", help="write prompt to file")
+    handoff_parser.add_argument("--dry-run", action="store_true", help="print signature spaces without writing/copying")
+
     integration_parser = subparsers.add_parser("integration", help="list machine-readable adapter integrations")
     integration_subparsers = integration_parser.add_subparsers(dest="integration_command", required=True)
     integration_list_parser = integration_subparsers.add_parser("list", help="list integrations from integrations/catalog.json")
@@ -528,6 +588,8 @@ def main(argv: list[str] | None = None) -> int:
         return enforce(args)
     if args.command == "compile":
         return compile_workspace(args)
+    if args.command == "handoff":
+        return handoff_workspace(args)
     if args.command == "integration":
         if args.integration_command == "list":
             return integration_list(args)

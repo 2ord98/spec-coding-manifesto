@@ -1,4 +1,4 @@
-"""Stdlib-only typed contracts for future Specification-Driven Coding compile/handoff.
+"""Stdlib-only typed contracts for Specification-Driven Coding compile/handoff.
 
 These dataclasses are DSPy-inspired structural contracts, not a DSPy dependency.
 They do not call models, read files, write files, or assume repository paths.

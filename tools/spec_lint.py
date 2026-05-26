@@ -64,6 +64,11 @@ REQUIRED_ROOT = [
     "docs/32-anti-template-charter.md",
     "docs/33-compile-engine-spec.md",
     "docs/34-decision-space-resolution.md",
+    "docs/35-handoff-engine-spec.md",
+    "docs/36-cli-target-matrix.md",
+    "docs/37-agentic-protocol.md",
+    "docs/38-mcp-integration.md",
+    "docs/39-marketplace-submission-guidelines.md",
     ".specify/memory/constitution.md",
     ".specify/templates/overrides/checklist-template.md",
     ".specify/templates/overrides/analysis-template.md",
@@ -78,10 +83,12 @@ REQUIRED_ROOT = [
     "scorecards/spec-enforcement-scorecard.md",
     "scorecards/continuous-enforcement-scorecard.md",
     "skills/specification-driven-coding/SKILL.md",
+    "skills/INDEX.md",
     "tools/sdc.py",
     "tools/sdc_demo.py",
     "tools/sdc_enforce.py",
     "tools/sdc_compile.py",
+    "tools/sdc_handoff.py",
     "tools/sdc_signature.py",
     "sdc_cli/__init__.py",
     "sdc_cli/__main__.py",
@@ -110,6 +117,16 @@ REQUIRED_ROOT = [
     "examples/enforcement-smoke/tasks.md",
     "examples/enforcement-smoke/scorecard.md",
     "examples/enforcement-smoke/app.py",
+    "extensions/mcp/README.md",
+    "extensions/mcp/SPEC.md",
+    "extensions/mcp/manifest.json",
+    "plugins/claude-code/README.md",
+    "plugins/codex/README.md",
+    "plugins/cursor/README.md",
+    "plugins/aider/README.md",
+    "plugins/gemini/README.md",
+    "plugins/generic/README.md",
+    "plugins/builder/README.md",
 ]
 
 PROFILE_DEPTH_FILES = {
@@ -151,12 +168,35 @@ ROLE_PROMPT_SECTIONS = [
     "## Signature",
     "## Mission",
     "## Role assumption",
+    "## Mission goals",
     "## Deliverables",
     "## Guardrails",
     "## Failure modes",
     "## Scorecard focus",
     "## Compatible phases",
     "## Compatible target CLIs",
+    "## Abstract demonstrations",
+]
+
+HANDOFF_TARGETS = [
+    "generic",
+    "codex",
+    "claude-code",
+    "cursor",
+    "aider",
+    "gemini-cli",
+    "builder",
+    "mcp",
+]
+
+PLUGIN_TARGET_FOLDERS = [
+    "claude-code",
+    "codex",
+    "cursor",
+    "aider",
+    "gemini",
+    "generic",
+    "builder",
 ]
 
 FORBIDDEN_PROFILE_DEFAULT_TERMS = [
@@ -320,9 +360,73 @@ def check_sdc_cli_mapping() -> int:
         if not any(rel in text for rel in rels):
             print(f"CLI: tools/sdc.py missing prompt mapping for {command}: {', '.join(rels)}")
             issues += 1
-    for utility in ["tools/sdc_demo.py", "tools/sdc_enforce.py", "tools/sdc_compile.py", "demo", "enforce", "compile"]:
+    for utility in [
+        "tools/sdc_demo.py",
+        "tools/sdc_enforce.py",
+        "tools/sdc_compile.py",
+        "tools/sdc_handoff.py",
+        "demo",
+        "enforce",
+        "compile",
+        "handoff",
+    ]:
         if utility not in text:
             print(f"CLI: tools/sdc.py missing utility mapping for {utility}")
+            issues += 1
+    return issues
+
+
+def check_handoff_surface() -> int:
+    issues = 0
+    path = ROOT / "tools" / "sdc_handoff.py"
+    if path.exists():
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if "RolePromptSignature" not in text:
+            print("HANDOFF: tools/sdc_handoff.py must import/use RolePromptSignature")
+            issues += 1
+        for target in HANDOFF_TARGETS:
+            if f'"{target}"' not in text and f"'{target}'" not in text:
+                print(f"HANDOFF: missing target {target}")
+                issues += 1
+        for required in ["input_space", "output_space", "compiled_prompt", "attachments", "target_instructions"]:
+            if required not in text:
+                print(f"HANDOFF: tools/sdc_handoff.py missing {required}")
+                issues += 1
+    for rel in ["README.md", "README.it.md", "tools/README.md", "docs/21-command-model.md"]:
+        text = (ROOT / rel).read_text(encoding="utf-8", errors="ignore")
+        if "sdc handoff" not in text:
+            print(f"HANDOFF: {rel} missing handoff command reference")
+            issues += 1
+    return issues
+
+
+def check_plugin_targets() -> int:
+    issues = 0
+    for folder in PLUGIN_TARGET_FOLDERS:
+        path = ROOT / "plugins" / folder / "README.md"
+        if not path.exists():
+            print(f"PLUGINS: missing plugins/{folder}/README.md")
+            issues += 1
+    return issues
+
+
+def check_mcp_and_marketplace_docs() -> int:
+    issues = 0
+    manifest_path = ROOT / "extensions" / "mcp" / "manifest.json"
+    if manifest_path.exists():
+        try:
+            json.loads(manifest_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            print(f"MCP: invalid extensions/mcp/manifest.json: {exc}")
+            issues += 1
+    market_path = ROOT / "docs" / "39-marketplace-submission-guidelines.md"
+    if market_path.exists():
+        text = market_path.read_text(encoding="utf-8", errors="ignore")
+        if "TO BE VERIFIED" not in text:
+            print("MARKETPLACE: docs/39 must contain TO BE VERIFIED")
+            issues += 1
+        if "SDC Readiness Matrix" not in text:
+            print("MARKETPLACE: docs/39 must contain SDC Readiness Matrix")
             issues += 1
     return issues
 
@@ -628,6 +732,22 @@ def check_sdc_signatures() -> int:
         if not hasattr(module, name):
             print(f"SIGNATURE: missing class {name}")
             issues += 1
+        elif not hasattr(getattr(module, name), "__dataclass_fields__"):
+            print(f"SIGNATURE: {name} is not a dataclass")
+            issues += 1
+    for class_name in ["ProfileSignature", "RolePromptSignature"]:
+        cls = getattr(module, class_name, None)
+        if cls and (not hasattr(cls, "input_space") or not hasattr(cls, "output_space")):
+            print(f"SIGNATURE: {class_name} missing input_space/output_space")
+            issues += 1
+    compile_text = (ROOT / "tools" / "sdc_compile.py").read_text(encoding="utf-8", errors="ignore")
+    handoff_text = (ROOT / "tools" / "sdc_handoff.py").read_text(encoding="utf-8", errors="ignore")
+    if "ProfileSignature" not in compile_text:
+        print("SIGNATURE: tools/sdc_compile.py must use ProfileSignature")
+        issues += 1
+    if "RolePromptSignature" not in handoff_text:
+        print("SIGNATURE: tools/sdc_handoff.py must use RolePromptSignature")
+        issues += 1
     return issues
 
 
@@ -964,6 +1084,10 @@ def main() -> int:
     if enforcement_issues:
         fail(f"found {enforcement_issues} enforcement surface issues")
 
+    handoff_issues = check_handoff_surface()
+    if handoff_issues:
+        fail(f"found {handoff_issues} handoff surface issues")
+
     integration_issues = check_integrations_catalog()
     if integration_issues:
         fail(f"found {integration_issues} integration catalog issues")
@@ -979,6 +1103,14 @@ def main() -> int:
     github_issues = check_github_instruction_files()
     if github_issues:
         fail(f"found {github_issues} GitHub instruction issues")
+
+    plugin_issues = check_plugin_targets()
+    if plugin_issues:
+        fail(f"found {plugin_issues} plugin target issues")
+
+    mcp_marketplace_issues = check_mcp_and_marketplace_docs()
+    if mcp_marketplace_issues:
+        fail(f"found {mcp_marketplace_issues} MCP/marketplace doc issues")
 
     demo_issues = check_demo_surface()
     if demo_issues:

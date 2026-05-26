@@ -48,6 +48,7 @@ cd my-project
 git clone https://github.com/2ord98/spec-coding-manifesto.git .sdc
 python3 .sdc/tools/sdc.py doctor --quick
 python3 .sdc/tools/sdc.py init "my project" --type marketing-site-cms --out "$PWD/sdc-workspace"
+python3 .sdc/tools/sdc.py compile --workspace "$PWD/sdc-workspace/specs/001-my-project"
 ```
 
 `pip install -e .sdc` is optional, not required. If used directly in a consumer project, editable install may create local `.egg-info` metadata; prefer `python3 .sdc/tools/sdc.py ...` for deterministic no-install usage. If a global `sdc` command is available, it searches the current directory and parents for the nearest `.sdc/tools/sdc.py`.
@@ -262,7 +263,9 @@ The `sdc` entrypoint is primarily intended for repository contributor mode and e
 
 `init` accepts both `--name` and an optional positional shorthand. If `--type` is missing, it fails with a clear example instead of scaffolding implicitly.
 
-`sdc compile` and `sdc handoff` are planned future workflow commands. This cycle adds the profile-depth foundation and typed structural contracts they will use, but does not implement those commands yet.
+`sdc compile` is deterministic and stdlib-only. It fills decision boundaries in existing SDC artifacts from `raw-request.md` and the selected profile-depth package. It does not generate application code, call an LLM/API, or choose a final stack as fact. Unresolved choices are written as `[ASK]`; reversible defaults are written as `[ASSUMPTION]`. Compile assertions use `DecisionAssertion` from `tools/sdc_signature.py`.
+
+`sdc handoff` is planned for a later phase and is not implemented yet.
 
 ## Integrations, Extensions, And Presets
 

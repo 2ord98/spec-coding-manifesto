@@ -28,6 +28,7 @@ The `Vertical Blueprint` comes before the final plan and tasks because it is the
 12. Aggiorna spec e blueprint quando il codice diverge.
 13. Non introdurre permessi write, automazioni distruttive o tool calls sensibili senza human approval.
 14. Prima del merge o della consegna, esegui audit e scorecard contro spec, blueprint, plan e tasks.
+15. Usa `sdc compile` solo come compilatore deterministico di artifact: non genera app, non chiama LLM/API e deve preservare incertezza con `[ASK]` e `[ASSUMPTION]`.
 
 ## Non-negotiable rules
 
@@ -45,6 +46,7 @@ The `Vertical Blueprint` comes before the final plan and tasks because it is the
 12. Update spec and blueprint when code diverges.
 13. Do not introduce write permissions, destructive automation, or sensitive tool calls without human approval.
 14. Before merge or delivery, run audit and scorecard against spec, blueprint, plan, and tasks.
+15. Use `sdc compile` only as a deterministic artifact compiler: it does not generate apps, does not call LLMs/APIs, and must preserve uncertainty with `[ASK]` and `[ASSUMPTION]`.
 
 ## Disciplina dell’agente
 
@@ -98,14 +100,16 @@ The `Vertical Blueprint` comes before the final plan and tasks because it is the
 11. `docs/30-profile-depth-spec.md`
 12. `docs/31-decision-space-model.md`
 13. `docs/32-anti-template-charter.md`
-14. `docs/16-cross-tool-ingestion-matrix.md`
-15. `docs/10-project-type-index.md`
-16. profilo in `project-types/`
-17. profile-depth package in `project-types/<profile-id>/`
-18. blueprint in `blueprints/`
-19. role prompt in `agents/role-prompts/`
-20. template in `.specify/templates/overrides/`
-21. prompt operativo in `prompts/`
+14. `docs/33-compile-engine-spec.md`
+15. `docs/34-decision-space-resolution.md`
+16. `docs/16-cross-tool-ingestion-matrix.md`
+17. `docs/10-project-type-index.md`
+18. profilo in `project-types/`
+19. profile-depth package in `project-types/<profile-id>/`
+20. blueprint in `blueprints/`
+21. role prompt in `agents/role-prompts/`
+22. template in `.specify/templates/overrides/`
+23. prompt operativo in `prompts/`
 
 ## Output minimo prima del codice
 

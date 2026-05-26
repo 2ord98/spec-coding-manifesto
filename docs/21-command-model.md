@@ -65,6 +65,7 @@ cd my-project
 git clone https://github.com/2ord98/spec-coding-manifesto.git .sdc
 python3 .sdc/tools/sdc.py doctor --quick
 python3 .sdc/tools/sdc.py init "my project" --type marketing-site-cms --out "$PWD/sdc-workspace"
+python3 .sdc/tools/sdc.py compile --workspace "$PWD/sdc-workspace/specs/001-my-project"
 ```
 
 Repository contributor mode:
@@ -93,6 +94,8 @@ python3 tools/sdc.py demo run --fixture 001-builder-habit-dashboard --format mar
 python3 tools/sdc.py enforce check --path benchmarks/golden/001-builder-habit-dashboard
 python3 tools/sdc.py enforce check --workspace examples/enforcement-smoke
 python3 tools/sdc.py enforce check --workspace examples/enforcement-smoke --format json
+python3 tools/sdc.py compile --workspace /private/tmp/sdc-init-smoke/specs/001-domain-app
+python3 tools/sdc.py compile --workspace /private/tmp/sdc-init-smoke/specs/001-domain-app --format json --dry-run
 sdc enforce check --path benchmarks/golden/001-builder-habit-dashboard
 python3 tools/sdc.py init "domain app" --type full-stack-saas --out /private/tmp/sdc-init-smoke
 python3 tools/sdc.py init --type full-stack-saas --name "domain app"
@@ -115,6 +118,8 @@ The CLI is intentionally thin. It exposes the command map, prints or inspects pr
 
 `list` also reports profile-depth state for every project profile as `depth: PASS` or `depth: FAIL`. Profile-depth packages are decision boundaries, not templates: they constrain stack options, security baseline, performance budget, testing contract, and blueprint fields before implementation.
 
+`compile` is a deterministic artifact compiler. It reads `raw-request.md`, `project-profile.md`, `artifact-manifest.json`, and `project-types/<profile-id>/`, then fills scaffold/placeholder artifact sections while preserving user-written content unless `--force` is used. It does not call models or APIs. It writes unresolved high-impact uncertainty as `[ASK]`, reversible defaults as `[ASSUMPTION]`, and validates output with `DecisionAssertion`.
+
 `integration list` is a repository integration registry utility. It is not a new `/sdc.*` methodology stage and does not alter the official pipeline.
 
 `extension list` and `preset list` are repository discovery utilities. Extensions describe optional method modules; presets describe operational bundles that point to existing profiles, blueprints, prompts, scorecards, fixtures, and gates. They are not `/sdc.*` methodology stages, do not install or apply anything, and do not alter the official pipeline.
@@ -129,7 +134,7 @@ The CLI is intentionally thin. It exposes the command map, prints or inspects pr
 
 The CLI is a navigation and validation aid. It does not generate applications, choose product architecture, or replace the Specification-Driven Coding method.
 
-Future `sdc compile` and `sdc handoff` commands will use `tools/sdc_signature.py`, a stdlib-only DSPy-inspired contract module. They are not implemented in this cycle.
+`tools/sdc_signature.py` contains stdlib-only DSPy-inspired contracts used by compile. `sdc handoff` is not implemented in this cycle.
 
 ## GitHub ecosystem utilities
 

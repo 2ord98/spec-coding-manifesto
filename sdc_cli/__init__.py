@@ -6,9 +6,13 @@ import sys
 from pathlib import Path
 
 
+def _cwd_and_parents() -> list[Path]:
+    cwd = Path.cwd().resolve()
+    return [cwd, *cwd.parents]
+
+
 def _candidate_roots() -> list[Path]:
-    roots = [Path(__file__).resolve().parents[1], Path.cwd()]
-    roots.extend(Path.cwd().parents)
+    roots = [Path(__file__).resolve().parents[1], *_cwd_and_parents()]
     seen: set[Path] = set()
     unique = []
     for root in roots:
@@ -20,13 +24,19 @@ def _candidate_roots() -> list[Path]:
 
 
 def _find_tools_cli() -> Path:
+    for root in _cwd_and_parents():
+        embedded = root / ".sdc" / "tools" / "sdc.py"
+        if embedded.exists():
+            return embedded
+
     for root in _candidate_roots():
         path = root / "tools" / "sdc.py"
         if path.exists():
             return path
     raise RuntimeError(
-        "Cannot locate tools/sdc.py. Run this command from the spec-coding-manifesto repository root "
-        "or install the repository in editable mode with `pip install -e .`."
+        "Cannot locate tools/sdc.py. Run this command from a project containing `.sdc/tools/sdc.py`, "
+        "from the spec-coding-manifesto repository root, or from an editable checkout installed with "
+        "`pip install -e .`."
     )
 
 

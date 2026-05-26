@@ -51,6 +51,17 @@ The commands below are the repository command layer. Some commands are helper ga
 
 Use `tools/sdc.py` when a terminal-facing workflow is useful:
 
+Consumer no-install mode:
+
+```bash
+cd my-project
+git clone https://github.com/2ord98/spec-coding-manifesto.git .sdc
+python3 .sdc/tools/sdc.py doctor --quick
+python3 .sdc/tools/sdc.py init "my project" --type marketing-site-cms --out "$PWD/sdc-workspace"
+```
+
+Repository contributor mode:
+
 ```bash
 pip install -e .
 sdc doctor
@@ -91,7 +102,7 @@ python3 -m sdc_cli demo run --fixture 001-builder-habit-dashboard
 python3 -m sdc_cli enforce check --path benchmarks/golden/001-builder-habit-dashboard
 ```
 
-The `sdc` entrypoint is intended for editable use from a repository checkout. It is not a standalone remote package manager and does not auto-install repository assets outside the checkout.
+`pip install -e .sdc` is optional for consumer projects and may create local `.egg-info` metadata. Prefer `python3 .sdc/tools/sdc.py ...` for deterministic no-install usage. If a global `sdc` command is available, it searches upward for the nearest embedded `.sdc/tools/sdc.py` before falling back to contributor checkout behavior.
 
 The CLI is intentionally thin. It exposes the command map, prints or inspects prompt files, delegates workspace creation to `tools/spec_scaffold.py`, and runs existing validation. It does not replace agent judgment or the artifact gates.
 

@@ -2,6 +2,17 @@
 
 Gli script non richiedono dipendenze esterne.
 
+Consumer no-install mode from another project:
+
+```bash
+cd my-project
+git clone https://github.com/2ord98/spec-coding-manifesto.git .sdc
+python3 .sdc/tools/sdc.py doctor --quick
+python3 .sdc/tools/sdc.py init "my project" --type marketing-site-cms --out "$PWD/sdc-workspace"
+```
+
+Repository contributor mode:
+
 ```bash
 pip install -e .
 sdc doctor
@@ -49,7 +60,7 @@ python3 tools/spec_scaffold.py --list
 python3 tools/score_blueprint.py blueprints/02-full-project-blueprint.md
 ```
 
-The `sdc` entrypoint is intended for editable use from a repository checkout. This release does not package the whole repository as a standalone remote tool and does not auto-install repository assets outside the checkout.
+`pip install -e .sdc` is optional for consumer projects and may create local `.egg-info` metadata. Prefer `python3 .sdc/tools/sdc.py ...` for deterministic no-install usage. If a global `sdc` command is available, it searches upward for the nearest embedded `.sdc/tools/sdc.py` before falling back to contributor checkout behavior.
 
 - `sdc.py`: espone una command surface leggera per `/sdc.*`, stampa/ispeziona i prompt, elenca integration, extension e preset registry, delega scaffold, demo, harness e verifica lo stato della repo. `doctor` esegue tutte le fixture; `doctor --quick` usa il percorso smoke rapido.
 - `sdc_cli`: wrapper installabile che espone lo stesso comando come `sdc` tramite `pyproject.toml`.

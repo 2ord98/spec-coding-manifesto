@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Updated the `sdc` CLI wrapper to prefer an embedded `.sdc/tools/sdc.py` checkout from consumer projects before falling back to contributor checkout behavior.
+- Documented deterministic no-install consumer usage and clarified that editable install may create local `.egg-info` metadata.
+
 ## 0.5.0
 
 - Added `extensions/catalog.json` and `extensions/README.md` for discoverable optional method modules.

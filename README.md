@@ -32,6 +32,19 @@ sdc doctor --quick
 
 What makes this different: most workflows stop at the specification. This one enforces it from intake to release.
 
+## Consumer Project Mode
+
+For a project that wants to use Specification-Driven Coding as an embedded toolkit, use a deterministic no-install checkout:
+
+```bash
+cd my-project
+git clone https://github.com/2ord98/spec-coding-manifesto.git .sdc
+python3 .sdc/tools/sdc.py doctor --quick
+python3 .sdc/tools/sdc.py init "my project" --type marketing-site-cms --out "$PWD/sdc-workspace"
+```
+
+`pip install -e .sdc` is optional, not required. If used directly in a consumer project, editable install may create local `.egg-info` metadata; prefer `python3 .sdc/tools/sdc.py ...` for deterministic no-install usage. If a global `sdc` command is available, it searches the current directory and parents for the nearest `.sdc/tools/sdc.py`.
+
 ## Where it fits
 
 Vibe coding is fast: a prompt goes in, usable software often comes out, and the model's defaults quietly become the product. Basic specification-first workflows are a real step forward because they structure the path from request to specification, plan, and tasks. But they often stop at the artifact layer, leaving agents and builders to fill domain detail from their own priors. Editor rule files and coding-agent instructions configure how an agent behaves, but they do not compile what is being built into a domain-specific construction contract.
@@ -178,6 +191,8 @@ At the end, return a 0-100 scorecard with gaps and next fixes.
 
 ## CLI Install And Use
 
+Repository contributor mode:
+
 ```bash
 pip install -e .
 sdc doctor
@@ -224,7 +239,16 @@ python3 -m sdc_cli enforce check --path benchmarks/golden/001-builder-habit-dash
 python3 tools/sdc.py doctor
 ```
 
-The `sdc` entrypoint is intended for editable use from a repository checkout. This release does not package the whole repository as a standalone remote tool and does not auto-install repository assets outside the checkout.
+Consumer no-install mode:
+
+```bash
+cd my-project
+git clone https://github.com/2ord98/spec-coding-manifesto.git .sdc
+python3 .sdc/tools/sdc.py doctor --quick
+python3 .sdc/tools/sdc.py init "my project" --type marketing-site-cms --out "$PWD/sdc-workspace"
+```
+
+The `sdc` entrypoint is primarily intended for repository contributor mode and embedded `.sdc` checkouts. This release does not package the whole repository as a standalone remote tool and does not auto-install repository assets outside the checkout.
 
 `init` accepts both `--name` and an optional positional shorthand. If `--type` is missing, it fails with a clear example instead of scaffolding implicitly.
 

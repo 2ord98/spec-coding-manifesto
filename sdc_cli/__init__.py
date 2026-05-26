@@ -6,9 +6,18 @@ import sys
 from pathlib import Path
 
 
-def _candidate_roots() -> list[Path]:
-    roots = [Path(__file__).resolve().parents[1], Path.cwd()]
-    roots.extend(Path.cwd().parents)
+def _cwd_and_parents() -> list[Path]:
+    try:
+        cwd = Path.cwd().resolve()
+    except OSError:
+        return []
+    return [cwd, *cwd.parents]
+
+
+def _candidate_roots(cwd_roots: list[Path] | None = None) -> list[Path]:
+    if cwd_roots is None:
+        cwd_roots = _cwd_and_parents()
+    roots = [Path(__file__).resolve().parents[1], *cwd_roots]
     seen: set[Path] = set()
     unique = []
     for root in roots:
@@ -19,14 +28,31 @@ def _candidate_roots() -> list[Path]:
     return unique
 
 
+def _is_embedded_sdc_cli(sdc_dir: Path, cli_path: Path) -> bool:
+    return (
+        cli_path.is_file()
+        and (sdc_dir / "pyproject.toml").is_file()
+        and (sdc_dir / "AGENTS.md").is_file()
+    )
+
+
 def _find_tools_cli() -> Path:
-    for root in _candidate_roots():
+    cwd_roots = _cwd_and_parents()
+    for root in cwd_roots:
+        sdc_dir = root / ".sdc"
+        embedded = sdc_dir / "tools" / "sdc.py"
+        # Consumer projects should prefer their embedded SDC checkout when present.
+        if _is_embedded_sdc_cli(sdc_dir, embedded):
+            return embedded
+
+    for root in _candidate_roots(cwd_roots):
         path = root / "tools" / "sdc.py"
-        if path.exists():
+        if path.is_file():
             return path
     raise RuntimeError(
-        "Cannot locate tools/sdc.py. Run this command from the spec-coding-manifesto repository root "
-        "or install the repository in editable mode with `pip install -e .`."
+        "Cannot locate tools/sdc.py. Run this command from a project containing `.sdc/tools/sdc.py`, "
+        "from the spec-coding-manifesto repository root, or from an editable checkout installed with "
+        "`pip install -e .`."
     )
 
 

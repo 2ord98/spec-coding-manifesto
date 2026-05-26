@@ -113,7 +113,7 @@ def profile_depth_status(profile_id: str) -> str:
     for name in ["stack-options.json", "domain-dictionary.json", "performance-budget.json"]:
         try:
             json.loads((depth_dir / name).read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+        except (OSError, ValueError):
             return "FAIL"
     return "PASS"
 
@@ -251,7 +251,10 @@ def artifact_manifest(args: argparse.Namespace) -> int:
 def load_catalog(path: Path, required_keys: set[str]) -> list[dict[str, object]]:
     if not path.exists():
         raise FileNotFoundError(f"Missing catalog: {path}")
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise ValueError(f"Cannot read JSON catalog {path.relative_to(ROOT)}: {exc}") from exc
     if not isinstance(payload, list):
         raise ValueError(f"{path.relative_to(ROOT)} must contain a top-level list")
     for index, entry in enumerate(payload, start=1):

@@ -76,15 +76,19 @@ class DecisionAssertion:
     has_default_marker: bool = False
     ask_count: int = 0
     assumption_count: int = 0
+    score: Optional[int] = None
     score_min: int = 80
 
     def passes(self) -> bool:
-        return (
+        structural_pass = (
             self.critical_section_filled
             and self.has_default_marker
             and self.ask_count >= 3
             and self.assumption_count >= 2
         )
+        if self.score is None:
+            return structural_pass
+        return structural_pass and self.score >= self.score_min
 
     def report(self) -> dict:
         return {
@@ -92,6 +96,7 @@ class DecisionAssertion:
             "has_default_marker": self.has_default_marker,
             "ask_count": self.ask_count,
             "assumption_count": self.assumption_count,
+            "score": self.score,
             "score_min": self.score_min,
             "passes": self.passes(),
         }

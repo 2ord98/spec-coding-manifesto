@@ -138,6 +138,10 @@ PROFILE_DEPTH_FILES = {
     "blueprint-template.md",
 }
 
+IGNORED_PROFILE_DEPTH_SIDECARS = {".DS_Store"}
+IGNORED_PROFILE_DEPTH_SUFFIXES = {".swp", ".tmp", ".pyc"}
+IGNORED_PROFILE_DEPTH_DIRS = {"__pycache__"}
+
 STACK_OPTION_KEYS = {
     "id",
     "name",
@@ -416,7 +420,7 @@ def check_mcp_and_marketplace_docs() -> int:
     if manifest_path.exists():
         try:
             json.loads(manifest_path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError as exc:
+        except (OSError, ValueError) as exc:
             print(f"MCP: invalid extensions/mcp/manifest.json: {exc}")
             issues += 1
     market_path = ROOT / "docs" / "39-marketplace-submission-guidelines.md"
@@ -462,7 +466,7 @@ def check_integrations_catalog() -> int:
     issues = 0
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
+    except (OSError, ValueError) as exc:
         print(f"INTEGRATIONS: invalid JSON in {path.relative_to(ROOT)}: {exc}")
         return 1
 
@@ -537,7 +541,7 @@ def check_extension_catalog() -> int:
     issues = 0
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
+    except (OSError, ValueError) as exc:
         print(f"EXTENSIONS: invalid JSON in {path.relative_to(ROOT)}: {exc}")
         return 1
 
@@ -633,7 +637,19 @@ def check_profile_depth() -> int:
             issues += 1
             continue
 
-        actual_files = {path.name for path in depth_dir.iterdir() if path.is_file()}
+        unexpected_sidecar_dirs = [
+            path.name for path in depth_dir.iterdir() if path.is_dir() and path.name not in IGNORED_PROFILE_DEPTH_DIRS
+        ]
+        for name in unexpected_sidecar_dirs:
+            print(f"PROFILE_DEPTH: {profile_id} has unexpected directory: {name}")
+            issues += 1
+        actual_files = {
+            path.name
+            for path in depth_dir.iterdir()
+            if path.is_file()
+            and path.name not in IGNORED_PROFILE_DEPTH_SIDECARS
+            and path.suffix not in IGNORED_PROFILE_DEPTH_SUFFIXES
+        }
         missing = sorted(PROFILE_DEPTH_FILES - actual_files)
         extra = sorted(actual_files - PROFILE_DEPTH_FILES)
         if missing:
@@ -653,7 +669,7 @@ def check_profile_depth() -> int:
         if stack_path.exists():
             try:
                 stack_payload = json.loads(stack_path.read_text(encoding="utf-8"))
-            except json.JSONDecodeError as exc:
+            except (OSError, ValueError) as exc:
                 print(f"PROFILE_DEPTH: {profile_id}/stack-options.json invalid JSON: {exc}")
                 issues += 1
                 stack_payload = {}
@@ -686,7 +702,7 @@ def check_profile_depth() -> int:
             if path.exists():
                 try:
                     json.loads(path.read_text(encoding="utf-8"))
-                except json.JSONDecodeError as exc:
+                except (OSError, ValueError) as exc:
                     print(f"PROFILE_DEPTH: {profile_id}/{name} invalid JSON: {exc}")
                     issues += 1
     return issues
@@ -754,17 +770,24 @@ def check_sdc_signatures() -> int:
 def check_profile_domain_hardcoding() -> int:
     issues = 0
     scoped_paths = []
+    scoped_paths.extend((ROOT / "project-types").glob("[0-9][0-9]-*.md"))
     for profile_id in project_profile_ids():
         depth_dir = ROOT / "project-types" / profile_id
         if depth_dir.exists():
-            scoped_paths.extend(path for path in depth_dir.iterdir() if path.is_file())
+            scoped_paths.extend(
+                path
+                for path in depth_dir.iterdir()
+                if path.is_file()
+                and path.name not in IGNORED_PROFILE_DEPTH_SIDECARS
+                and path.suffix not in IGNORED_PROFILE_DEPTH_SUFFIXES
+            )
     role_dir = ROOT / "agents" / "role-prompts"
     if role_dir.exists():
         scoped_paths.extend(role_dir.glob("*.md"))
 
     for path in scoped_paths:
         for line_number, line in enumerate(path.read_text(encoding="utf-8", errors="ignore").splitlines(), start=1):
-            if "[APPLIES_IF example only]" in line or "forbidden" in line.lower():
+            if "[APPLIES_IF example only]" in line:
                 continue
             lowered = line.lower()
             for term in FORBIDDEN_PROFILE_DEFAULT_TERMS:
@@ -780,7 +803,7 @@ def check_preset_catalog() -> int:
     issues = 0
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
+    except (OSError, ValueError) as exc:
         print(f"PRESETS: invalid JSON in {path.relative_to(ROOT)}: {exc}")
         return 1
 
@@ -932,7 +955,7 @@ def check_benchmark_fixtures() -> int:
         if expected_path.exists():
             try:
                 expected = json.loads(expected_path.read_text(encoding="utf-8"))
-            except json.JSONDecodeError as exc:
+            except (OSError, ValueError) as exc:
                 print(f"FIXTURE: {fixture} invalid expected.json: {exc}")
                 issues += 1
                 expected = {}

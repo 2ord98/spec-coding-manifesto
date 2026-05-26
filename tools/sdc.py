@@ -399,6 +399,23 @@ def enforce(args: argparse.Namespace) -> int:
     return run(command)
 
 
+def compile_workspace(args: argparse.Namespace) -> int:
+    command = [PYTHON, "tools/sdc_compile.py", "compile", "--workspace", args.workspace]
+    if args.profile:
+        command.extend(["--profile", args.profile])
+    if args.raw_request:
+        command.extend(["--raw-request", args.raw_request])
+    if args.format:
+        command.extend(["--format", args.format])
+    if args.strict:
+        command.append("--strict")
+    if args.dry_run:
+        command.append("--dry-run")
+    if args.force:
+        command.append("--force")
+    return run(command)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Specification-Driven Coding command surface")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -453,6 +470,15 @@ def main(argv: list[str] | None = None) -> int:
     enforce_parser.add_argument("--format", choices=["text", "json"], default="text", help="output format")
     enforce_parser.add_argument("--write-report", action="store_true", help="write sdc-enforcement-report.md")
 
+    compile_parser = subparsers.add_parser("compile", help="deterministically compile dense SDC artifacts")
+    compile_parser.add_argument("--workspace", required=True, help="SDC workspace spec folder")
+    compile_parser.add_argument("--profile", help="override detected profile id")
+    compile_parser.add_argument("--raw-request", help="override raw-request.md path")
+    compile_parser.add_argument("--format", choices=["text", "markdown", "json"], default="text", help="output format")
+    compile_parser.add_argument("--strict", action="store_true", help="fail on compile assertion warning")
+    compile_parser.add_argument("--dry-run", action="store_true", help="print output summary without writing files")
+    compile_parser.add_argument("--force", action="store_true", help="overwrite scaffold/generated sections")
+
     integration_parser = subparsers.add_parser("integration", help="list machine-readable adapter integrations")
     integration_subparsers = integration_parser.add_subparsers(dest="integration_command", required=True)
     integration_list_parser = integration_subparsers.add_parser("list", help="list integrations from integrations/catalog.json")
@@ -500,6 +526,8 @@ def main(argv: list[str] | None = None) -> int:
         if not args.path and not args.workspace:
             parser.error("sdc.py enforce check requires --path or --workspace")
         return enforce(args)
+    if args.command == "compile":
+        return compile_workspace(args)
     if args.command == "integration":
         if args.integration_command == "list":
             return integration_list(args)

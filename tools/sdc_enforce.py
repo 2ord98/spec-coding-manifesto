@@ -61,6 +61,21 @@ STOPWORDS = {
     "with",
     "without",
 }
+CRITICAL_BLUEPRINT_SECTIONS = [
+    "Role contract",
+    "Domain contract",
+    "Mode contract",
+    "Stack decision space",
+    "File tree contract",
+    "Architecture contract",
+    "Data/API/tool contracts",
+    "UX/design/motion contract",
+    "Security hardening contract",
+    "Performance budget",
+    "Testing contract",
+    "Output contract",
+    "Scorecard",
+]
 
 
 def rel(path: Path) -> str:
@@ -118,6 +133,41 @@ def add_issue(issues: list[dict[str, str]], severity: str, kind: str, message: s
     issues.append({"severity": severity, "type": kind, "message": message, "decision": decision})
 
 
+def section_body(text: str, section: str) -> str:
+    match = re.search(rf"^## {re.escape(section)}\s*$", text, flags=re.MULTILINE)
+    if not match:
+        return ""
+    next_match = re.search(r"^## .+$", text[match.end() :], flags=re.MULTILINE)
+    end = match.end() + next_match.start() if next_match else len(text)
+    return text[match.end() : end].strip()
+
+
+def check_critical_blueprint_sections(issues: list[dict[str, str]], blueprint_text: str) -> None:
+    compiled_or_contract = "<!-- SDC_COMPILE_GENERATED -->" in blueprint_text or "## Stack decision space" in blueprint_text
+    if not compiled_or_contract:
+        return
+    for section in CRITICAL_BLUEPRINT_SECTIONS:
+        if f"## {section}" not in blueprint_text:
+            severity = "FAIL" if "<!-- SDC_COMPILE_GENERATED -->" in blueprint_text else "WARN"
+            add_issue(
+                issues,
+                severity,
+                "critical-section",
+                f"Missing critical blueprint section: {section}",
+                "update Vertical Blueprint or accept documented exception",
+            )
+            continue
+        body = section_body(blueprint_text, section)
+        if not body:
+            add_issue(
+                issues,
+                "FAIL",
+                "empty-critical-section",
+                f"Critical blueprint section is empty: {section}",
+                "update Vertical Blueprint before implementation",
+            )
+
+
 def check_workspace(path: Path) -> dict[str, object]:
     path = path.resolve()
     issues: list[dict[str, str]] = []
@@ -148,6 +198,8 @@ def check_workspace(path: Path) -> dict[str, object]:
     tasks_text = texts.get("tasks.md", "")
     scorecard_text = texts.get("scorecard.md", "")
     combined_downstream = "\n".join([plan_text, tasks_text, scorecard_text])
+
+    check_critical_blueprint_sections(issues, blueprint_text)
 
     terms = key_terms(spec_text, blueprint_text)
     term_score, missing_terms = coverage(terms, combined_downstream)

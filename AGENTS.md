@@ -81,6 +81,7 @@ The `Vertical Blueprint` comes before the final plan and tasks because it is the
 - `agents/requirements-engineer.md`: turns intake into verifiable, unambiguous requirements.
 - `agents/security-reviewer.md`: reviews threat model, auth, privacy, and permissions.
 - `agents/ux-systems-designer.md`: defines specific, anti-generic UX direction.
+- `agents/role-prompts/README.md`: index for domain-agnostic executable role prompts.
 
 ## Ordine lettura consigliato
 
@@ -94,12 +95,17 @@ The `Vertical Blueprint` comes before the final plan and tasks because it is the
 8. `docs/18-evaluation-scorecards.md`
 9. `docs/20-artifact-toolkit-model.md`
 10. `docs/21-command-model.md`
-11. `docs/16-cross-tool-ingestion-matrix.md`
-12. `docs/10-project-type-index.md`
-13. profilo in `project-types/`
-14. blueprint in `blueprints/`
-15. template in `.specify/templates/overrides/`
-16. prompt operativo in `prompts/`
+11. `docs/30-profile-depth-spec.md`
+12. `docs/31-decision-space-model.md`
+13. `docs/32-anti-template-charter.md`
+14. `docs/16-cross-tool-ingestion-matrix.md`
+15. `docs/10-project-type-index.md`
+16. profilo in `project-types/`
+17. profile-depth package in `project-types/<profile-id>/`
+18. blueprint in `blueprints/`
+19. role prompt in `agents/role-prompts/`
+20. template in `.specify/templates/overrides/`
+21. prompt operativo in `prompts/`
 
 ## Output minimo prima del codice
 

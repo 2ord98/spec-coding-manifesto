@@ -1,0 +1,37 @@
+{
+  "profile_id": "backend-api-microservices",
+  "software_class": "server-side API, integration service, or distributed backend system",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "modular-api-service",
+      "name": "Modular API service",
+      "default": true,
+      "when_to_use": "One deployable service can own the required domain boundary.",
+      "when_not_to_use": "Avoid when independent deployment boundaries are proven.",
+      "rationale": "Keeps API delivery simple and observable.",
+      "tradeoffs": "Internal modules need discipline to avoid coupling.",
+      "risks": "Boundaries can erode as features accumulate."
+    },
+    {
+      "id": "event-driven-services",
+      "name": "Event-driven service set",
+      "default": false,
+      "when_to_use": "Workflows require asynchronous coordination or durable events.",
+      "when_not_to_use": "Avoid for simple request-response CRUD.",
+      "rationale": "Improves decoupling and resilience for workflows.",
+      "tradeoffs": "Debugging and ordering become harder.",
+      "risks": "Event schemas can drift without governance."
+    },
+    {
+      "id": "microservice-system",
+      "name": "Microservice system",
+      "default": false,
+      "when_to_use": "Independent teams or scaling boundaries are explicit.",
+      "when_not_to_use": "Avoid when a modular service is sufficient.",
+      "rationale": "Supports independent deployment and scaling.",
+      "tradeoffs": "Operational overhead is high.",
+      "risks": "Distributed failures require mature observability."
+    }
+  ]
+}

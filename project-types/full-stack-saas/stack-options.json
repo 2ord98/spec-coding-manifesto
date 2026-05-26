@@ -1,0 +1,37 @@
+{
+  "profile_id": "full-stack-saas",
+  "software_class": "account-based web product with persistent data, roles, and operational workflows",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "monolith-web-app",
+      "name": "Modular web application monolith",
+      "default": true,
+      "when_to_use": "Product scope needs cohesive UI, API, database, and roles.",
+      "when_not_to_use": "Avoid when independent services are already justified.",
+      "rationale": "Keeps product iteration and deployment simple.",
+      "tradeoffs": "Scaling boundaries arrive later than in service-first designs.",
+      "risks": "Large modules can blur ownership without clear boundaries."
+    },
+    {
+      "id": "api-first-web-app",
+      "name": "API-first web application",
+      "default": false,
+      "when_to_use": "Multiple clients or integration surfaces are expected early.",
+      "when_not_to_use": "Avoid when a single web surface is enough.",
+      "rationale": "Clarifies backend contracts and integration points.",
+      "tradeoffs": "Adds contract maintenance and client coordination.",
+      "risks": "Premature API breadth can slow product learning."
+    },
+    {
+      "id": "service-split-platform",
+      "name": "Service-split platform",
+      "default": false,
+      "when_to_use": "Independent scaling, ownership, or compliance boundaries are proven.",
+      "when_not_to_use": "Avoid for early product discovery or small teams.",
+      "rationale": "Makes operational boundaries explicit.",
+      "tradeoffs": "Higher deployment and observability cost.",
+      "risks": "Distributed complexity can hide product uncertainty."
+    }
+  ]
+}

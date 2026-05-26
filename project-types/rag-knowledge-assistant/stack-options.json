@@ -1,0 +1,47 @@
+{
+  "profile_id": "rag-knowledge-assistant",
+  "software_class": "retrieval-grounded assistant over controlled knowledge sources",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "local-vector-index",
+      "name": "Local vector index",
+      "default": true,
+      "when_to_use": "Corpus size and deployment constraints allow local retrieval.",
+      "when_not_to_use": "Avoid when multi-user scaling or managed operations are required.",
+      "rationale": "Keeps data flow transparent and simple.",
+      "tradeoffs": "Scaling and operations remain local concerns.",
+      "risks": "Index freshness can be manual without automation."
+    },
+    {
+      "id": "managed-vector-store",
+      "name": "Managed vector store",
+      "default": false,
+      "when_to_use": "Retrieval scale, uptime, or operations justify managed infrastructure.",
+      "when_not_to_use": "Avoid when local privacy or simplicity is more important.",
+      "rationale": "Improves operational scalability.",
+      "tradeoffs": "Adds vendor and access-control surface.",
+      "risks": "Cost and data boundary risks need review."
+    },
+    {
+      "id": "hybrid-search-pipeline",
+      "name": "Hybrid lexical and vector retrieval",
+      "default": false,
+      "when_to_use": "Exact terms and semantic similarity both matter.",
+      "when_not_to_use": "Avoid when one retrieval mode is clearly sufficient.",
+      "rationale": "Improves recall across query styles.",
+      "tradeoffs": "Ranking logic becomes more complex.",
+      "risks": "Poor fusion can reduce answer quality."
+    },
+    {
+      "id": "retrieval-api-service",
+      "name": "Retrieval API service",
+      "default": false,
+      "when_to_use": "Multiple applications need the same retrieval contract.",
+      "when_not_to_use": "Avoid for a single lightweight assistant.",
+      "rationale": "Centralizes evidence retrieval and policy.",
+      "tradeoffs": "Adds service boundary overhead.",
+      "risks": "API consumers can bypass answer safeguards."
+    }
+  ]
+}

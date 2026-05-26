@@ -1,0 +1,29 @@
+{
+  "profile_id": "marketing-site-cms",
+  "software_class": "public content, conversion, documentation, or lightweight CMS surface",
+  "common_users": [
+    "anonymous visitor",
+    "content editor",
+    "site owner"
+  ],
+  "common_artifacts": [
+    "information architecture",
+    "content model",
+    "page map",
+    "form flow",
+    "SEO metadata"
+  ],
+  "anti_patterns": [
+    "heavy application shell for mostly static content",
+    "authentication by habit",
+    "database by habit",
+    "generic landing page sections"
+  ],
+  "assumption_prompts": [
+    "[ASK] What user role owns the primary workflow?",
+    "[ASK] Which constraints make the default stack unsuitable?",
+    "[ASSUMPTION] Treat missing product details as reversible until confirmed.",
+    "[ASSUMPTION] Prefer the smallest architecture that satisfies explicit evidence."
+  ],
+  "domain_boundary": "Class-specific terms describe software behavior, not a market vertical default."
+}

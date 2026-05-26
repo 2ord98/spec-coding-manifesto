@@ -20,6 +20,14 @@ PYTHON = sys.executable
 INTEGRATIONS_CATALOG = ROOT / "integrations" / "catalog.json"
 EXTENSIONS_CATALOG = ROOT / "extensions" / "catalog.json"
 PRESETS_CATALOG = ROOT / "presets" / "catalog.json"
+PROFILE_DEPTH_FILES = {
+    "stack-options.json",
+    "domain-dictionary.json",
+    "security-baseline.md",
+    "performance-budget.json",
+    "testing-contract.md",
+    "blueprint-template.md",
+}
 
 
 @dataclass(frozen=True)
@@ -70,6 +78,44 @@ def print_command_list() -> None:
     print("|---|---|---|")
     for command in COMMANDS:
         print(f"| `{command.name}` | `{command.prompt}` | `{command.next_command}` |")
+    print()
+    print("Project profiles:")
+    for profile_id, title in load_project_profiles():
+        print(f"{profile_id:36} {title[:48]:48} depth: {profile_depth_status(profile_id)}")
+
+
+def load_project_profiles() -> list[tuple[str, str]]:
+    profiles: list[tuple[str, str]] = []
+    for path in sorted((ROOT / "project-types").glob("[0-9][0-9]-*.md")):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        profile_id = path.stem[3:]
+        for line in text.splitlines():
+            if line.startswith("- Profile id: `") and line.endswith("`"):
+                profile_id = line.split("`", 2)[1]
+                break
+        title = path.stem[3:]
+        for line in text.splitlines():
+            if line.startswith("# "):
+                title = line[2:].strip()
+                break
+        profiles.append((profile_id, title))
+    return profiles
+
+
+def profile_depth_status(profile_id: str) -> str:
+    depth_dir = ROOT / "project-types" / profile_id
+    if not depth_dir.is_dir():
+        return "FAIL"
+    for name in PROFILE_DEPTH_FILES:
+        path = depth_dir / name
+        if not path.is_file() or not path.read_text(encoding="utf-8", errors="ignore").strip():
+            return "FAIL"
+    for name in ["stack-options.json", "domain-dictionary.json", "performance-budget.json"]:
+        try:
+            json.loads((depth_dir / name).read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return "FAIL"
+    return "PASS"
 
 
 def slugify(value: str) -> str:
@@ -205,7 +251,10 @@ def artifact_manifest(args: argparse.Namespace) -> int:
 def load_catalog(path: Path, required_keys: set[str]) -> list[dict[str, object]]:
     if not path.exists():
         raise FileNotFoundError(f"Missing catalog: {path}")
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise ValueError(f"Cannot read JSON catalog {path.relative_to(ROOT)}: {exc}") from exc
     if not isinstance(payload, list):
         raise ValueError(f"{path.relative_to(ROOT)} must contain a top-level list")
     for index, entry in enumerate(payload, start=1):
@@ -353,6 +402,42 @@ def enforce(args: argparse.Namespace) -> int:
     return run(command)
 
 
+def compile_workspace(args: argparse.Namespace) -> int:
+    command = [PYTHON, "tools/sdc_compile.py", "compile", "--workspace", args.workspace]
+    if args.profile:
+        command.extend(["--profile", args.profile])
+    if args.raw_request:
+        command.extend(["--raw-request", args.raw_request])
+    if args.format:
+        command.extend(["--format", args.format])
+    if args.strict:
+        command.append("--strict")
+    if args.dry_run:
+        command.append("--dry-run")
+    if args.force:
+        command.append("--force")
+    return run(command)
+
+
+def handoff_workspace(args: argparse.Namespace) -> int:
+    command = [PYTHON, "tools/sdc_handoff.py", "handoff", "--workspace", args.workspace]
+    if args.target:
+        command.extend(["--target", args.target])
+    if args.role:
+        command.extend(["--role", args.role])
+    if args.scope:
+        command.extend(["--scope", args.scope])
+    if args.format:
+        command.extend(["--format", args.format])
+    if args.copy:
+        command.append("--copy")
+    if args.out:
+        command.extend(["--out", args.out])
+    if args.dry_run:
+        command.append("--dry-run")
+    return run(command)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Specification-Driven Coding command surface")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -407,6 +492,56 @@ def main(argv: list[str] | None = None) -> int:
     enforce_parser.add_argument("--format", choices=["text", "json"], default="text", help="output format")
     enforce_parser.add_argument("--write-report", action="store_true", help="write sdc-enforcement-report.md")
 
+    compile_parser = subparsers.add_parser("compile", help="deterministically compile dense SDC artifacts")
+    compile_parser.add_argument("--workspace", required=True, help="SDC workspace spec folder")
+    compile_parser.add_argument("--profile", help="override detected profile id")
+    compile_parser.add_argument("--raw-request", help="override raw-request.md path")
+    compile_parser.add_argument("--format", choices=["text", "markdown", "json"], default="text", help="output format")
+    compile_parser.add_argument("--strict", action="store_true", help="fail on compile assertion warning")
+    compile_parser.add_argument("--dry-run", action="store_true", help="print output summary without writing files")
+    compile_parser.add_argument("--force", action="store_true", help="overwrite scaffold/generated sections")
+
+    handoff_parser = subparsers.add_parser("handoff", help="assemble deterministic agent/builder handoff prompt")
+    handoff_parser.add_argument("--workspace", required=True, help="SDC workspace spec folder")
+    handoff_parser.add_argument(
+        "--target",
+        choices=["generic", "codex", "claude-code", "cursor", "aider", "gemini-cli", "builder", "mcp"],
+        default="generic",
+        help="target CLI or builder",
+    )
+    handoff_parser.add_argument(
+        "--role",
+        choices=[
+            "auto",
+            "architect",
+            "engineer",
+            "reviewer",
+            "optimizer",
+            "debugger",
+            "performance",
+            "security",
+            "techlead",
+            "devops",
+            "frontend",
+            "ai",
+            "startup",
+            "refactor",
+            "requirements",
+        ],
+        default="auto",
+        help="role prompt to apply",
+    )
+    handoff_parser.add_argument(
+        "--scope",
+        choices=["auto", "blueprint", "implement", "review", "debug", "refactor", "deploy", "security", "performance"],
+        default="auto",
+        help="handoff scope",
+    )
+    handoff_parser.add_argument("--format", choices=["text", "markdown", "json"], default="markdown", help="output format")
+    handoff_parser.add_argument("--copy", action="store_true", help="copy prompt to clipboard when available")
+    handoff_parser.add_argument("--out", help="write prompt to file")
+    handoff_parser.add_argument("--dry-run", action="store_true", help="print signature spaces without writing/copying")
+
     integration_parser = subparsers.add_parser("integration", help="list machine-readable adapter integrations")
     integration_subparsers = integration_parser.add_subparsers(dest="integration_command", required=True)
     integration_list_parser = integration_subparsers.add_parser("list", help="list integrations from integrations/catalog.json")
@@ -454,6 +589,10 @@ def main(argv: list[str] | None = None) -> int:
         if not args.path and not args.workspace:
             parser.error("sdc.py enforce check requires --path or --workspace")
         return enforce(args)
+    if args.command == "compile":
+        return compile_workspace(args)
+    if args.command == "handoff":
+        return handoff_workspace(args)
     if args.command == "integration":
         if args.integration_command == "list":
             return integration_list(args)

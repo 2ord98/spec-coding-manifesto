@@ -1,0 +1,28 @@
+{
+  "profile_id": "desktop-app",
+  "software_class": "desktop application with local OS integration and offline behavior",
+  "common_users": [
+    "desktop user",
+    "workspace owner",
+    "support operator"
+  ],
+  "common_artifacts": [
+    "local data model",
+    "file access policy",
+    "update channel",
+    "offline state",
+    "OS integration map"
+  ],
+  "anti_patterns": [
+    "web app shell without desktop reason",
+    "unsafe file access",
+    "no update or crash strategy"
+  ],
+  "assumption_prompts": [
+    "[ASK] What user role owns the primary workflow?",
+    "[ASK] Which constraints make the default stack unsuitable?",
+    "[ASSUMPTION] Treat missing product details as reversible until confirmed.",
+    "[ASSUMPTION] Prefer the smallest architecture that satisfies explicit evidence."
+  ],
+  "domain_boundary": "Class-specific terms describe software behavior, not a market vertical default."
+}

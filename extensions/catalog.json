@@ -25,13 +25,20 @@
     "name": "Integration Adapter Pack",
     "type": "adapter-pack",
     "status": "core",
-    "files": [
-      "integrations/catalog.json",
-      "ai-adapters/README.md",
-      "plugins/README.md",
-      "plugins/agents-md.md",
-      "plugins/mcp-tooling.md"
-    ],
+      "files": [
+        "integrations/catalog.json",
+        "ai-adapters/README.md",
+        "plugins/README.md",
+        "plugins/agents-md.md",
+        "plugins/mcp-tooling.md",
+        "plugins/claude-code/README.md",
+        "plugins/codex/README.md",
+        "plugins/cursor/README.md",
+        "plugins/aider/README.md",
+        "plugins/gemini/README.md",
+        "plugins/generic/README.md",
+        "plugins/builder/README.md"
+      ],
     "primary_use": "Discover how agents, app builders, and plugin adapters ingest or route the repository.",
     "requires": [
       "AGENTS.md",

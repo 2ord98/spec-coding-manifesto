@@ -1,0 +1,37 @@
+{
+  "profile_id": "realtime-collaboration",
+  "software_class": "realtime collaboration, messaging, shared editing, or synchronized workspace",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "websocket-collaboration",
+      "name": "WebSocket collaboration service",
+      "default": true,
+      "when_to_use": "Low-latency multi-user state is central.",
+      "when_not_to_use": "Avoid when polling or async updates are enough.",
+      "rationale": "Gives explicit control over realtime behavior.",
+      "tradeoffs": "Requires connection and scaling design.",
+      "risks": "State consistency can be hard to debug."
+    },
+    {
+      "id": "crdt-local-first",
+      "name": "CRDT local-first collaboration",
+      "default": false,
+      "when_to_use": "Offline edits and conflict-free merging matter.",
+      "when_not_to_use": "Avoid when server authority is required.",
+      "rationale": "Supports resilient distributed editing.",
+      "tradeoffs": "Data model complexity increases.",
+      "risks": "CRDT semantics can surprise product behavior."
+    },
+    {
+      "id": "managed-realtime-platform",
+      "name": "Managed realtime platform",
+      "default": false,
+      "when_to_use": "Operational speed matters more than custom protocol control.",
+      "when_not_to_use": "Avoid when data boundaries require full control.",
+      "rationale": "Reduces infrastructure effort.",
+      "tradeoffs": "Platform limits shape architecture.",
+      "risks": "Vendor coupling affects future changes."
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "profile_id": "rag-knowledge-assistant",
+  "software_class": "retrieval-grounded assistant over controlled knowledge sources",
+  "common_users": [
+    "knowledge worker",
+    "support operator",
+    "domain reviewer"
+  ],
+  "common_artifacts": [
+    "corpus inventory",
+    "chunking strategy",
+    "retrieval policy",
+    "citation contract",
+    "evaluation set"
+  ],
+  "anti_patterns": [
+    "uncited answers",
+    "stale documents",
+    "no refusal behavior",
+    "embedding without retrieval evaluation"
+  ],
+  "assumption_prompts": [
+    "[ASK] What user role owns the primary workflow?",
+    "[ASK] Which constraints make the default stack unsuitable?",
+    "[ASSUMPTION] Treat missing product details as reversible until confirmed.",
+    "[ASSUMPTION] Prefer the smallest architecture that satisfies explicit evidence."
+  ],
+  "domain_boundary": "Class-specific terms describe software behavior, not a market vertical default."
+}

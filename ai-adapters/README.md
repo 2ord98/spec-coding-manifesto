@@ -15,6 +15,10 @@ Provider-specific and builder-specific instruction files live here so the reposi
 - `GENERIC-AGENT.md`: generic LLM/coding-agent adapter.
 - `BUILDER-INGESTION.md`: app-builder ingestion adapter.
 
+## Handoff targets
+
+Use `sdc handoff --target ...` to assemble target-specific execution packets for `generic`, `codex`, `claude-code`, `cursor`, `aider`, `gemini-cli`, `builder`, and `mcp`. Adapter files remain source-of-truth pointers; target plugin guidance lives in `plugins/<target>/README.md`.
+
 ## Rule
 
 Adapters must point back to the source-of-truth documents instead of duplicating the manifesto:
@@ -26,3 +30,4 @@ Adapters must point back to the source-of-truth documents instead of duplicating
 - `docs/12-builder-ingestion-protocol.md`
 - `docs/14-vertical-blueprint-contracts.md`
 - `docs/21-command-model.md`
+- `docs/36-cli-target-matrix.md`

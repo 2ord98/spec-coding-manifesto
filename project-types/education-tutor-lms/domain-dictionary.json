@@ -1,0 +1,28 @@
+{
+  "profile_id": "education-tutor-lms",
+  "software_class": "learning workflow, tutoring assistant, course platform, or assessment system",
+  "common_users": [
+    "learner",
+    "instructor",
+    "program owner"
+  ],
+  "common_artifacts": [
+    "learning objective map",
+    "content sequence",
+    "assessment policy",
+    "progress model",
+    "feedback loop"
+  ],
+  "anti_patterns": [
+    "content dump without pedagogy",
+    "generic quiz flow",
+    "progress metrics without learning objective"
+  ],
+  "assumption_prompts": [
+    "[ASK] What user role owns the primary workflow?",
+    "[ASK] Which constraints make the default stack unsuitable?",
+    "[ASSUMPTION] Treat missing product details as reversible until confirmed.",
+    "[ASSUMPTION] Prefer the smallest architecture that satisfies explicit evidence."
+  ],
+  "domain_boundary": "Class-specific terms describe software behavior, not a market vertical default."
+}

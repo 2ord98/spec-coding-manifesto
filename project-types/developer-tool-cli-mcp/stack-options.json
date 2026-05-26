@@ -1,0 +1,47 @@
+{
+  "profile_id": "developer-tool-cli-mcp",
+  "software_class": "developer tool, command line interface, SDK, plugin, or MCP server",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "python-cli",
+      "name": "Python CLI tool",
+      "default": true,
+      "when_to_use": "Fast iteration and scriptability matter.",
+      "when_not_to_use": "Avoid when single-binary distribution is required.",
+      "rationale": "Uses familiar stdlib and packaging paths.",
+      "tradeoffs": "Runtime availability must be considered.",
+      "risks": "Loose typing can hide interface drift."
+    },
+    {
+      "id": "node-cli",
+      "name": "Node CLI tool",
+      "default": false,
+      "when_to_use": "Tooling targets JavaScript ecosystems or package scripts.",
+      "when_not_to_use": "Avoid when Python or compiled distribution fits better.",
+      "rationale": "Integrates with web tooling workflows.",
+      "tradeoffs": "Dependency surface can grow quickly.",
+      "risks": "Package resolution can surprise users."
+    },
+    {
+      "id": "compiled-binary",
+      "name": "Compiled binary tool",
+      "default": false,
+      "when_to_use": "Distribution, startup speed, or single-file delivery matters.",
+      "when_not_to_use": "Avoid when rapid scripting is more valuable.",
+      "rationale": "Improves portability and performance.",
+      "tradeoffs": "Build and release complexity increase.",
+      "risks": "Cross-platform behavior must be tested."
+    },
+    {
+      "id": "mcp-server",
+      "name": "MCP server",
+      "default": false,
+      "when_to_use": "External agents need structured tool access.",
+      "when_not_to_use": "Avoid when a local CLI is enough.",
+      "rationale": "Exposes clear tool contracts for agent workflows.",
+      "tradeoffs": "Tool permissions and auditability become central.",
+      "risks": "Unsafe tool exposure can create serious risk."
+    }
+  ]
+}

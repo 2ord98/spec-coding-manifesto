@@ -1,0 +1,37 @@
+{
+  "profile_id": "desktop-app",
+  "software_class": "desktop application with local OS integration and offline behavior",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "native-desktop",
+      "name": "Native desktop application",
+      "default": true,
+      "when_to_use": "OS integration, performance, or native UX is important.",
+      "when_not_to_use": "Avoid when web delivery is sufficient.",
+      "rationale": "Fits platform behavior and local resources.",
+      "tradeoffs": "Requires platform-specific work.",
+      "risks": "Release management is more complex."
+    },
+    {
+      "id": "hybrid-desktop",
+      "name": "Hybrid desktop application",
+      "default": false,
+      "when_to_use": "Web UI reuse matters while desktop packaging is required.",
+      "when_not_to_use": "Avoid when native performance or small footprint dominates.",
+      "rationale": "Accelerates UI development across platforms.",
+      "tradeoffs": "Larger runtime footprint.",
+      "risks": "Security boundaries need careful configuration."
+    },
+    {
+      "id": "local-first-desktop",
+      "name": "Local-first desktop application",
+      "default": false,
+      "when_to_use": "User data should remain primarily local.",
+      "when_not_to_use": "Avoid when collaboration and centralized state dominate.",
+      "rationale": "Improves privacy and offline reliability.",
+      "tradeoffs": "Sync is optional but complex if added.",
+      "risks": "Backup and migration need explicit design."
+    }
+  ]
+}

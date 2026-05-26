@@ -1,0 +1,28 @@
+{
+  "profile_id": "ai-chatbot-support",
+  "software_class": "conversational support assistant with escalation and service boundaries",
+  "common_users": [
+    "end user",
+    "support operator",
+    "knowledge owner"
+  ],
+  "common_artifacts": [
+    "intent map",
+    "handoff policy",
+    "conversation states",
+    "safety boundary",
+    "resolution metrics"
+  ],
+  "anti_patterns": [
+    "bot without escalation",
+    "answers without source policy",
+    "personality before task success"
+  ],
+  "assumption_prompts": [
+    "[ASK] What user role owns the primary workflow?",
+    "[ASK] Which constraints make the default stack unsuitable?",
+    "[ASSUMPTION] Treat missing product details as reversible until confirmed.",
+    "[ASSUMPTION] Prefer the smallest architecture that satisfies explicit evidence."
+  ],
+  "domain_boundary": "Class-specific terms describe software behavior, not a market vertical default."
+}

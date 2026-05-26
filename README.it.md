@@ -32,6 +32,13 @@ sdc doctor --quick
 
 Differenza chiave: molti workflow si fermano alla specification. Questo la fa rispettare dall'intake alla release.
 
+## Requisiti
+
+- Python 3.11+
+- Git
+
+In modalità consumer project non sono richiesti `uv`, `pipx`, installazione editable, comando globale, configurazione `PATH` o configurazione shell-specific.
+
 ## Modalità consumer project
 
 Per un progetto che vuole usare Specification-Driven Coding come toolkit incorporato, usa una checkout deterministica senza installazione:
@@ -41,6 +48,8 @@ cd my-project
 git clone https://github.com/2ord98/spec-coding-manifesto.git .sdc
 python3 .sdc/tools/sdc.py doctor --quick
 python3 .sdc/tools/sdc.py init "my project" --type marketing-site-cms --out "$PWD/sdc-workspace"
+python3 .sdc/tools/sdc.py compile --workspace "$PWD/sdc-workspace/specs/001-my-project"
+python3 .sdc/tools/sdc.py handoff --workspace "$PWD/sdc-workspace/specs/001-my-project" --target codex
 ```
 
 `pip install -e .sdc` è opzionale, non richiesto. Se usato direttamente dentro un consumer project, l'installazione editable può creare metadati `.egg-info` locali; preferisci `python3 .sdc/tools/sdc.py ...` per uso deterministico senza installazione. Se è disponibile un comando globale `sdc`, cerca dalla directory corrente verso l'alto la `.sdc/tools/sdc.py` più vicina.
@@ -50,6 +59,16 @@ python3 .sdc/tools/sdc.py init "my project" --type marketing-site-cms --out "$PW
 Il vibe coding è veloce: entra un prompt, spesso esce software utilizzabile, e i default del modello diventano silenziosamente il prodotto. I workflow specification-first sono un passo avanti perché strutturano il percorso da richiesta a specification, plan e tasks. Però spesso si fermano agli artefatti, lasciando ad agenti e builder il compito di riempire i dettagli di dominio con i propri default. Le regole editor e le istruzioni per coding agent configurano il comportamento dell'agente, ma non compilano ciò che deve essere costruito in un contratto specifico di costruzione.
 
 Specification-Driven Coding aggiunge gli strati mancanti: project profile che restringono lo spazio progettuale prima del planning, Vertical Blueprint che codificano il prodotto reale, scorecard che valutano gli artefatti con gate espliciti invece che con vibe, e Continuous Specification Enforcement che mantiene allineati specification, blueprint, plan, tasks e implementation mentre il progetto evolve.
+
+I profile sono confini decisionali, non template. Ogni profile descrive una classe di software, il decision space consentito, vincoli anti-default, filtri di rischio, stack option, performance budget, security baseline e testing contract. Le verticali di mercato arrivano dalla raw request, non dai default del profile.
+
+## Prima / Dopo
+
+Raw request: "Build project X."
+
+Rischio default/vibe: stack arbitrario, sicurezza mancante, assunzioni vuote e nessun target di validazione.
+
+Output SDC: decision matrix, `[DEFAULT — review and override if needed]`, `[ASK]`, `[ASSUMPTION]`, security baseline, performance budget, scorecard target e handoff prompt.
 
 ## Prova il demo
 
@@ -152,10 +171,11 @@ Alla fine restituisci una scorecard 0-100 con gap e prossime correzioni.
 - `docs/20-artifact-toolkit-model.md`: modello operativo di artefatti, comandi, template e validazione.
 - `docs/21-command-model.md`: command model `/sdc.*` per usare la repo come toolkit operativo.
 - `docs/25-english-public-index.md`: policy per documentazione pubblica English-first e companion italiane.
-- `project-types/`: 20 profili progetto per evitare output generici.
+- `project-types/`: 20 profili progetto per evitare output generici. Ogni profile ha un profile-depth package con stack option, domain dictionary, security baseline, performance budget, testing contract e blueprint template.
 - `blueprints/`: contratti verticali per progetti interi, task piccoli, web, mobile, WordPress, RAG e sistemi multi-agente.
 - `prompts/`: prompt operativi per trasformare richieste incomplete in prompt e blueprint specifici.
-- `agents/`: ruoli agentici per prodotto, requirements, UX, platform, AI, security, QA, implementazione e release.
+- `agents/`: ruoli agentici e role prompt per prodotto, requirements, UX, platform, AI, security, QA, implementazione e release.
+- `tools/sdc_signature.py`: contratti tipizzati stdlib-only, ispirati a DSPy, per compile e handoff.
 - `skills/`: skill riusabili per attivare workflow specifici.
 - `plugins/`: adapter per app builder, AGENTS.md, MCP, Cursor, Claude Code e flussi specification-first.
 - `scorecards/`: rubriche di valutazione per prompt, blueprint, implementazione e sistemi multi-agente.
@@ -251,6 +271,12 @@ python3 .sdc/tools/sdc.py init "my project" --type marketing-site-cms --out "$PW
 L'entrypoint `sdc` è pensato soprattutto per contributor mode e checkout `.sdc` incorporate. Questa release non impacchetta l'intera repository come tool remoto standalone e non installa automaticamente gli asset fuori dalla checkout.
 
 `init` accetta sia `--name` sia una forma shorthand posizionale. Se `--type` manca, la CLI fallisce con un esempio esplicito invece di scaffoldingare in modo implicito.
+
+`sdc compile` è deterministico e stdlib-only. Riempie i confini decisionali negli artifact SDC esistenti partendo da `raw-request.md` e dal profile-depth package selezionato. Non genera codice applicativo, non chiama LLM/API e non sceglie uno stack finale come fatto certo. Le scelte irrisolte vengono scritte come `[ASK]`; i default reversibili come `[ASSUMPTION]`. Le compile assertion usano `DecisionAssertion` da `tools/sdc_signature.py`.
+
+`sdc handoff` è assemblaggio deterministico di prompt. Legge una workspace compilata e produce un execution packet target-specific per `generic`, `codex`, `claude-code`, `cursor`, `aider`, `gemini-cli`, `builder` o `mcp`. Non chiama LLM/API e non esegue agenti.
+
+Per la target guidance vedi `docs/36-cli-target-matrix.md`. Per le note marketplace-readiness vedi `docs/39-marketplace-submission-guidelines.md`; nessuna submission marketplace è stata fatta.
 
 ## Integrazioni, extension e preset
 

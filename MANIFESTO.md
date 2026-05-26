@@ -46,7 +46,11 @@ Basic specification-first workflows make the path from specification to implemen
 
 **Specification-Driven Coding** is an AI-native development method that compiles incomplete human intent into explicit, domain-specific, tool-ingestible construction contracts before product generation or code implementation.
 
+Specification-Driven Coding turns vague requests into decision-bounded construction contracts.
+
 In this repository, `spec` means **specification**. Specificity is the outcome: software anchored to a real user, domain, workflow, stack rationale, data model, constraints, security posture, tests, and evaluation criteria.
+
+Specification-Driven Coding is not a scaffolder, not a template generator, not a prompt-to-app auto-builder, not a vibe-coding wrapper, and not specialized in any application domain.
 
 The official pipeline is:
 

@@ -1,0 +1,20 @@
+{
+  "id": "sdc.mcp.design",
+  "name": "Specification-Driven Coding MCP Design",
+  "status": "design-only",
+  "runtime_server": false,
+  "tools": [
+    "sdc.compile",
+    "sdc.handoff",
+    "sdc.enforce",
+    "sdc.list_profiles",
+    "sdc.get_blueprint",
+    "sdc.score"
+  ],
+  "permissions": {
+    "read_only_by_default": true,
+    "write_requires_approval": true,
+    "destructive_default": false
+  },
+  "notes": "Design metadata only; no MCP server is implemented in this repository cycle."
+}

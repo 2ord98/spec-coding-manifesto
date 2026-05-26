@@ -1,0 +1,47 @@
+{
+  "profile_id": "mobile-app",
+  "software_class": "mobile-first product with device constraints, app lifecycle, and network variability",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "native-app",
+      "name": "Native platform application",
+      "default": true,
+      "when_to_use": "Platform integration, performance, or native UX quality is central.",
+      "when_not_to_use": "Avoid when cross-platform speed matters more than platform depth.",
+      "rationale": "Maximizes device fit and platform conventions.",
+      "tradeoffs": "Requires platform-specific implementation effort.",
+      "risks": "Feature parity can drift across platforms."
+    },
+    {
+      "id": "cross-platform-app",
+      "name": "Cross-platform mobile application",
+      "default": false,
+      "when_to_use": "Shared product logic and faster multi-platform delivery matter.",
+      "when_not_to_use": "Avoid when deep platform APIs dominate.",
+      "rationale": "Reduces duplicated product code.",
+      "tradeoffs": "May need native bridges for advanced features.",
+      "risks": "Generic UI can weaken platform fit."
+    },
+    {
+      "id": "local-first-mobile",
+      "name": "Local-first mobile application",
+      "default": false,
+      "when_to_use": "Offline continuity and sync are central requirements.",
+      "when_not_to_use": "Avoid when data must always be server-authoritative.",
+      "rationale": "Improves resilience and perceived speed.",
+      "tradeoffs": "Sync conflicts need explicit product rules.",
+      "risks": "Data integrity risks increase without a clear model."
+    },
+    {
+      "id": "pwa-mobile-surface",
+      "name": "Progressive web mobile surface",
+      "default": false,
+      "when_to_use": "Install friction must be low and native features are limited.",
+      "when_not_to_use": "Avoid when store distribution or native APIs are required.",
+      "rationale": "Keeps delivery lightweight and web-native.",
+      "tradeoffs": "Platform feature support varies.",
+      "risks": "Users may expect app-store behavior that is unavailable."
+    }
+  ]
+}

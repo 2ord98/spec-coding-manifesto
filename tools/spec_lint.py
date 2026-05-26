@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Minimal linter for the Specification-Driven Coding repository."""
 from pathlib import Path
+import importlib.util
 import json
 import re
 import sys
@@ -58,6 +59,16 @@ REQUIRED_ROOT = [
     "docs/26-continuous-specification-enforcement.md",
     "docs/27-end-to-end-walkthrough.md",
     "docs/28-continuous-specification-enforcement.md",
+    "docs/30-profile-depth-spec.md",
+    "docs/31-decision-space-model.md",
+    "docs/32-anti-template-charter.md",
+    "docs/33-compile-engine-spec.md",
+    "docs/34-decision-space-resolution.md",
+    "docs/35-handoff-engine-spec.md",
+    "docs/36-cli-target-matrix.md",
+    "docs/37-agentic-protocol.md",
+    "docs/38-mcp-integration.md",
+    "docs/39-marketplace-submission-guidelines.md",
     ".specify/memory/constitution.md",
     ".specify/templates/overrides/checklist-template.md",
     ".specify/templates/overrides/analysis-template.md",
@@ -72,15 +83,23 @@ REQUIRED_ROOT = [
     "scorecards/spec-enforcement-scorecard.md",
     "scorecards/continuous-enforcement-scorecard.md",
     "skills/specification-driven-coding/SKILL.md",
+    "skills/INDEX.md",
     "tools/sdc.py",
     "tools/sdc_demo.py",
     "tools/sdc_enforce.py",
+    "tools/sdc_compile.py",
+    "tools/sdc_handoff.py",
+    "tools/sdc_signature.py",
     "sdc_cli/__init__.py",
     "sdc_cli/__main__.py",
     "tools/sdc_harness.py",
     "benchmarks/fixtures/001-builder-habit-dashboard/raw-prompt.md",
     "benchmarks/fixtures/001-builder-habit-dashboard/sdc-prompt.md",
     "benchmarks/fixtures/001-builder-habit-dashboard/expected.json",
+    "benchmarks/fixtures/004-compile-structural-validation/raw-request.md",
+    "benchmarks/fixtures/004-compile-structural-validation/expected.json",
+    "benchmarks/golden/004-compile-structural-validation/blueprint.md",
+    "benchmarks/golden/004-compile-structural-validation/scorecard.md",
     "benchmarks/golden/001-builder-habit-dashboard/intake.md",
     "benchmarks/golden/001-builder-habit-dashboard/spec.md",
     "benchmarks/golden/001-builder-habit-dashboard/blueprint.md",
@@ -98,6 +117,107 @@ REQUIRED_ROOT = [
     "examples/enforcement-smoke/tasks.md",
     "examples/enforcement-smoke/scorecard.md",
     "examples/enforcement-smoke/app.py",
+    "extensions/mcp/README.md",
+    "extensions/mcp/SPEC.md",
+    "extensions/mcp/manifest.json",
+    "plugins/claude-code/README.md",
+    "plugins/codex/README.md",
+    "plugins/cursor/README.md",
+    "plugins/aider/README.md",
+    "plugins/gemini/README.md",
+    "plugins/generic/README.md",
+    "plugins/builder/README.md",
+]
+
+PROFILE_DEPTH_FILES = {
+    "stack-options.json",
+    "domain-dictionary.json",
+    "security-baseline.md",
+    "performance-budget.json",
+    "testing-contract.md",
+    "blueprint-template.md",
+}
+
+IGNORED_PROFILE_DEPTH_SIDECARS = {".DS_Store"}
+IGNORED_PROFILE_DEPTH_SUFFIXES = {".swp", ".tmp", ".pyc"}
+IGNORED_PROFILE_DEPTH_DIRS = {"__pycache__"}
+
+STACK_OPTION_KEYS = {
+    "id",
+    "name",
+    "when_to_use",
+    "when_not_to_use",
+    "rationale",
+    "tradeoffs",
+    "risks",
+}
+
+ROLE_PROMPT_FILES = [
+    "startup-engineer.md",
+    "codebase-auditor.md",
+    "debugging-engineer.md",
+    "performance-engineer.md",
+    "architecture-refactorer.md",
+    "systems-architect.md",
+    "multi-agent-team.md",
+    "frontend-engineer.md",
+    "technical-lead.md",
+    "security-auditor.md",
+    "devops-engineer.md",
+    "ai-engineer.md",
+    "requirements-engineer.md",
+]
+
+ROLE_PROMPT_SECTIONS = [
+    "## Signature",
+    "## Mission",
+    "## Role assumption",
+    "## Mission goals",
+    "## Deliverables",
+    "## Guardrails",
+    "## Failure modes",
+    "## Scorecard focus",
+    "## Compatible phases",
+    "## Compatible target CLIs",
+    "## Abstract demonstrations",
+]
+
+HANDOFF_TARGETS = [
+    "generic",
+    "codex",
+    "claude-code",
+    "cursor",
+    "aider",
+    "gemini-cli",
+    "builder",
+    "mcp",
+]
+
+PLUGIN_TARGET_FOLDERS = [
+    "claude-code",
+    "codex",
+    "cursor",
+    "aider",
+    "gemini",
+    "generic",
+    "builder",
+]
+
+FORBIDDEN_PROFILE_DEFAULT_TERMS = [
+    "medical",
+    "healthcare",
+    "clinic",
+    "hospital",
+    "legal",
+    "lawyer",
+    "fintech",
+    "banking",
+    "insurance",
+    "restaurant",
+    "gym",
+    "dental",
+    "pharmacy",
+    "real estate",
 ]
 
 REQUIRED_SDC_COMMAND_PROMPTS = {
@@ -244,9 +364,73 @@ def check_sdc_cli_mapping() -> int:
         if not any(rel in text for rel in rels):
             print(f"CLI: tools/sdc.py missing prompt mapping for {command}: {', '.join(rels)}")
             issues += 1
-    for utility in ["tools/sdc_demo.py", "tools/sdc_enforce.py", "demo", "enforce"]:
+    for utility in [
+        "tools/sdc_demo.py",
+        "tools/sdc_enforce.py",
+        "tools/sdc_compile.py",
+        "tools/sdc_handoff.py",
+        "demo",
+        "enforce",
+        "compile",
+        "handoff",
+    ]:
         if utility not in text:
             print(f"CLI: tools/sdc.py missing utility mapping for {utility}")
+            issues += 1
+    return issues
+
+
+def check_handoff_surface() -> int:
+    issues = 0
+    path = ROOT / "tools" / "sdc_handoff.py"
+    if path.exists():
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if "RolePromptSignature" not in text:
+            print("HANDOFF: tools/sdc_handoff.py must import/use RolePromptSignature")
+            issues += 1
+        for target in HANDOFF_TARGETS:
+            if f'"{target}"' not in text and f"'{target}'" not in text:
+                print(f"HANDOFF: missing target {target}")
+                issues += 1
+        for required in ["input_space", "output_space", "compiled_prompt", "attachments", "target_instructions"]:
+            if required not in text:
+                print(f"HANDOFF: tools/sdc_handoff.py missing {required}")
+                issues += 1
+    for rel in ["README.md", "README.it.md", "tools/README.md", "docs/21-command-model.md"]:
+        text = (ROOT / rel).read_text(encoding="utf-8", errors="ignore")
+        if "sdc handoff" not in text:
+            print(f"HANDOFF: {rel} missing handoff command reference")
+            issues += 1
+    return issues
+
+
+def check_plugin_targets() -> int:
+    issues = 0
+    for folder in PLUGIN_TARGET_FOLDERS:
+        path = ROOT / "plugins" / folder / "README.md"
+        if not path.exists():
+            print(f"PLUGINS: missing plugins/{folder}/README.md")
+            issues += 1
+    return issues
+
+
+def check_mcp_and_marketplace_docs() -> int:
+    issues = 0
+    manifest_path = ROOT / "extensions" / "mcp" / "manifest.json"
+    if manifest_path.exists():
+        try:
+            json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            print(f"MCP: invalid extensions/mcp/manifest.json: {exc}")
+            issues += 1
+    market_path = ROOT / "docs" / "39-marketplace-submission-guidelines.md"
+    if market_path.exists():
+        text = market_path.read_text(encoding="utf-8", errors="ignore")
+        if "TO BE VERIFIED" not in text:
+            print("MARKETPLACE: docs/39 must contain TO BE VERIFIED")
+            issues += 1
+        if "SDC Readiness Matrix" not in text:
+            print("MARKETPLACE: docs/39 must contain SDC Readiness Matrix")
             issues += 1
     return issues
 
@@ -282,7 +466,7 @@ def check_integrations_catalog() -> int:
     issues = 0
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
+    except (OSError, ValueError) as exc:
         print(f"INTEGRATIONS: invalid JSON in {path.relative_to(ROOT)}: {exc}")
         return 1
 
@@ -357,7 +541,7 @@ def check_extension_catalog() -> int:
     issues = 0
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
+    except (OSError, ValueError) as exc:
         print(f"EXTENSIONS: invalid JSON in {path.relative_to(ROOT)}: {exc}")
         return 1
 
@@ -443,12 +627,183 @@ def project_profile_ids() -> set[str]:
     return ids
 
 
+def check_profile_depth() -> int:
+    issues = 0
+    profile_ids = project_profile_ids()
+    for profile_id in sorted(profile_ids):
+        depth_dir = ROOT / "project-types" / profile_id
+        if not depth_dir.is_dir():
+            print(f"PROFILE_DEPTH: missing folder project-types/{profile_id}")
+            issues += 1
+            continue
+
+        unexpected_sidecar_dirs = [
+            path.name for path in depth_dir.iterdir() if path.is_dir() and path.name not in IGNORED_PROFILE_DEPTH_DIRS
+        ]
+        for name in unexpected_sidecar_dirs:
+            print(f"PROFILE_DEPTH: {profile_id} has unexpected directory: {name}")
+            issues += 1
+        actual_files = {
+            path.name
+            for path in depth_dir.iterdir()
+            if path.is_file()
+            and path.name not in IGNORED_PROFILE_DEPTH_SIDECARS
+            and path.suffix not in IGNORED_PROFILE_DEPTH_SUFFIXES
+        }
+        missing = sorted(PROFILE_DEPTH_FILES - actual_files)
+        extra = sorted(actual_files - PROFILE_DEPTH_FILES)
+        if missing:
+            print(f"PROFILE_DEPTH: {profile_id} missing files: {', '.join(missing)}")
+            issues += 1
+        if extra:
+            print(f"PROFILE_DEPTH: {profile_id} has extra files: {', '.join(extra)}")
+            issues += 1
+
+        for name in PROFILE_DEPTH_FILES:
+            path = depth_dir / name
+            if path.exists() and not path.read_text(encoding="utf-8", errors="ignore").strip():
+                print(f"PROFILE_DEPTH: {profile_id}/{name} is empty")
+                issues += 1
+
+        stack_path = depth_dir / "stack-options.json"
+        if stack_path.exists():
+            try:
+                stack_payload = json.loads(stack_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError) as exc:
+                print(f"PROFILE_DEPTH: {profile_id}/stack-options.json invalid JSON: {exc}")
+                issues += 1
+                stack_payload = {}
+            options = stack_payload.get("options") if isinstance(stack_payload, dict) else None
+            if not isinstance(options, list) or not (3 <= len(options) <= 5):
+                print(f"PROFILE_DEPTH: {profile_id} must define 3-5 stack options")
+                issues += 1
+            else:
+                default_count = sum(1 for option in options if isinstance(option, dict) and option.get("default") is True)
+                if default_count != 1:
+                    print(f"PROFILE_DEPTH: {profile_id} must have exactly one default stack option")
+                    issues += 1
+                for index, option in enumerate(options, start=1):
+                    if not isinstance(option, dict):
+                        print(f"PROFILE_DEPTH: {profile_id} stack option {index} is not an object")
+                        issues += 1
+                        continue
+                    missing_keys = sorted(STACK_OPTION_KEYS - set(option))
+                    if missing_keys:
+                        print(f"PROFILE_DEPTH: {profile_id} stack option {index} missing keys: {', '.join(missing_keys)}")
+                        issues += 1
+                    for key in STACK_OPTION_KEYS:
+                        value = option.get(key)
+                        if not isinstance(value, str) or not value.strip():
+                            print(f"PROFILE_DEPTH: {profile_id} stack option {index} has empty {key}")
+                            issues += 1
+
+        for name in ["domain-dictionary.json", "performance-budget.json"]:
+            path = depth_dir / name
+            if path.exists():
+                try:
+                    json.loads(path.read_text(encoding="utf-8"))
+                except (OSError, ValueError) as exc:
+                    print(f"PROFILE_DEPTH: {profile_id}/{name} invalid JSON: {exc}")
+                    issues += 1
+    return issues
+
+
+def check_role_prompts() -> int:
+    issues = 0
+    role_dir = ROOT / "agents" / "role-prompts"
+    if not role_dir.is_dir():
+        print("ROLE_PROMPTS: missing agents/role-prompts")
+        return 1
+    if not ((role_dir / "README.md").exists() or (role_dir / "INDEX.md").exists()):
+        print("ROLE_PROMPTS: missing README.md or INDEX.md")
+        issues += 1
+    for name in ROLE_PROMPT_FILES:
+        path = role_dir / name
+        if not path.exists():
+            print(f"ROLE_PROMPTS: missing {name}")
+            issues += 1
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for section in ROLE_PROMPT_SECTIONS:
+            if section not in text:
+                print(f"ROLE_PROMPTS: {name} missing section {section}")
+                issues += 1
+    return issues
+
+
+def check_sdc_signatures() -> int:
+    path = ROOT / "tools" / "sdc_signature.py"
+    spec = importlib.util.spec_from_file_location("sdc_signature_check", path)
+    if spec is None or spec.loader is None:
+        print("SIGNATURE: cannot load tools/sdc_signature.py")
+        return 1
+    module = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(module)
+    except Exception as exc:  # pragma: no cover - surfaced by CLI linter output
+        print(f"SIGNATURE: import failed: {exc}")
+        return 1
+    issues = 0
+    for name in ["ProfileSignature", "RolePromptSignature", "DecisionAssertion"]:
+        if not hasattr(module, name):
+            print(f"SIGNATURE: missing class {name}")
+            issues += 1
+        elif not hasattr(getattr(module, name), "__dataclass_fields__"):
+            print(f"SIGNATURE: {name} is not a dataclass")
+            issues += 1
+    for class_name in ["ProfileSignature", "RolePromptSignature"]:
+        cls = getattr(module, class_name, None)
+        if cls and (not hasattr(cls, "input_space") or not hasattr(cls, "output_space")):
+            print(f"SIGNATURE: {class_name} missing input_space/output_space")
+            issues += 1
+    compile_text = (ROOT / "tools" / "sdc_compile.py").read_text(encoding="utf-8", errors="ignore")
+    handoff_text = (ROOT / "tools" / "sdc_handoff.py").read_text(encoding="utf-8", errors="ignore")
+    if "ProfileSignature" not in compile_text:
+        print("SIGNATURE: tools/sdc_compile.py must use ProfileSignature")
+        issues += 1
+    if "RolePromptSignature" not in handoff_text:
+        print("SIGNATURE: tools/sdc_handoff.py must use RolePromptSignature")
+        issues += 1
+    return issues
+
+
+def check_profile_domain_hardcoding() -> int:
+    issues = 0
+    scoped_paths = []
+    scoped_paths.extend((ROOT / "project-types").glob("[0-9][0-9]-*.md"))
+    for profile_id in project_profile_ids():
+        depth_dir = ROOT / "project-types" / profile_id
+        if depth_dir.exists():
+            scoped_paths.extend(
+                path
+                for path in depth_dir.iterdir()
+                if path.is_file()
+                and path.name not in IGNORED_PROFILE_DEPTH_SIDECARS
+                and path.suffix not in IGNORED_PROFILE_DEPTH_SUFFIXES
+            )
+    role_dir = ROOT / "agents" / "role-prompts"
+    if role_dir.exists():
+        scoped_paths.extend(role_dir.glob("*.md"))
+
+    for path in scoped_paths:
+        for line_number, line in enumerate(path.read_text(encoding="utf-8", errors="ignore").splitlines(), start=1):
+            if "[APPLIES_IF example only]" in line:
+                continue
+            lowered = line.lower()
+            for term in FORBIDDEN_PROFILE_DEFAULT_TERMS:
+                pattern = r"\b" + re.escape(term) + r"\b"
+                if re.search(pattern, lowered):
+                    print(f"DOMAIN_DEFAULT: {path.relative_to(ROOT)}:{line_number} contains unscoped term {term}")
+                    issues += 1
+    return issues
+
+
 def check_preset_catalog() -> int:
     path = ROOT / "presets" / "catalog.json"
     issues = 0
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
+    except (OSError, ValueError) as exc:
         print(f"PRESETS: invalid JSON in {path.relative_to(ROOT)}: {exc}")
         return 1
 
@@ -579,24 +934,44 @@ def check_benchmark_fixtures() -> int:
     fixtures_root = ROOT / "benchmarks" / "fixtures"
     golden_root = ROOT / "benchmarks" / "golden"
     required_golden = ["intake.md", "spec.md", "blueprint.md", "plan.md", "tasks.md", "scorecard.md"]
+    compile_expected_keys = {
+        "critical_sections_filled": bool,
+        "has_default_marker": bool,
+        "ask_count_min": int,
+        "assumption_count_min": int,
+        "score_min": int,
+        "required_sections": list,
+        "forbidden_empty_sections": bool,
+        "default_marker_text": str,
+    }
     for fixture_dir in sorted(path for path in fixtures_root.iterdir() if path.is_dir()):
         fixture = fixture_dir.name
         expected_path = fixture_dir / "expected.json"
-        for name in ["raw-prompt.md", "sdc-prompt.md", "expected.json"]:
+        fixture_required = ["raw-request.md", "expected.json"] if fixture == "004-compile-structural-validation" else ["raw-prompt.md", "sdc-prompt.md", "expected.json"]
+        for name in fixture_required:
             if not (fixture_dir / name).exists():
                 print(f"FIXTURE: {fixture} missing {name}")
                 issues += 1
         if expected_path.exists():
             try:
                 expected = json.loads(expected_path.read_text(encoding="utf-8"))
-            except json.JSONDecodeError as exc:
+            except (OSError, ValueError) as exc:
                 print(f"FIXTURE: {fixture} invalid expected.json: {exc}")
                 issues += 1
                 expected = {}
-            for key in ["project_profile", "anti_genericity_constraints", "acceptance_criteria", "stack_rationale", "quality_gates"]:
-                if not expected.get(key):
-                    print(f"FIXTURE: {fixture} missing expected key {key}")
+            if fixture == "004-compile-structural-validation":
+                if set(expected) != set(compile_expected_keys):
+                    print(f"FIXTURE: {fixture} expected.json must contain only compile threshold keys")
                     issues += 1
+                for key, expected_type in compile_expected_keys.items():
+                    if not isinstance(expected.get(key), expected_type):
+                        print(f"FIXTURE: {fixture} expected key {key} has wrong type")
+                        issues += 1
+            else:
+                for key in ["project_profile", "anti_genericity_constraints", "acceptance_criteria", "stack_rationale", "quality_gates"]:
+                    if not expected.get(key):
+                        print(f"FIXTURE: {fixture} missing expected key {key}")
+                        issues += 1
         golden_dir = golden_root / fixture
         for name in required_golden:
             if not (golden_dir / name).exists():
@@ -732,6 +1107,10 @@ def main() -> int:
     if enforcement_issues:
         fail(f"found {enforcement_issues} enforcement surface issues")
 
+    handoff_issues = check_handoff_surface()
+    if handoff_issues:
+        fail(f"found {handoff_issues} handoff surface issues")
+
     integration_issues = check_integrations_catalog()
     if integration_issues:
         fail(f"found {integration_issues} integration catalog issues")
@@ -748,6 +1127,14 @@ def main() -> int:
     if github_issues:
         fail(f"found {github_issues} GitHub instruction issues")
 
+    plugin_issues = check_plugin_targets()
+    if plugin_issues:
+        fail(f"found {plugin_issues} plugin target issues")
+
+    mcp_marketplace_issues = check_mcp_and_marketplace_docs()
+    if mcp_marketplace_issues:
+        fail(f"found {mcp_marketplace_issues} MCP/marketplace doc issues")
+
     demo_issues = check_demo_surface()
     if demo_issues:
         fail(f"found {demo_issues} demo surface issues")
@@ -755,6 +1142,22 @@ def main() -> int:
     fixture_issues = check_benchmark_fixtures()
     if fixture_issues:
         fail(f"found {fixture_issues} benchmark fixture issues")
+
+    profile_depth_issues = check_profile_depth()
+    if profile_depth_issues:
+        fail(f"found {profile_depth_issues} profile depth issues")
+
+    role_prompt_issues = check_role_prompts()
+    if role_prompt_issues:
+        fail(f"found {role_prompt_issues} role prompt issues")
+
+    signature_issues = check_sdc_signatures()
+    if signature_issues:
+        fail(f"found {signature_issues} signature issues")
+
+    domain_default_issues = check_profile_domain_hardcoding()
+    if domain_default_issues:
+        fail(f"found {domain_default_issues} domain hardcoding issues")
 
     print("PASS: Specification-Driven Coding repo structure is valid")
     print(f"Project profiles: {len(project_files)}")

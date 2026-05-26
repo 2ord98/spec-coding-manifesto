@@ -51,6 +51,13 @@ The commands below are the repository command layer. Some commands are helper ga
 
 Use `tools/sdc.py` when a terminal-facing workflow is useful:
 
+Minimum consumer requirements:
+
+- Python 3.11+
+- Git
+
+Global `sdc`, editable install, `uv`, `pipx`, PATH setup, and shell-specific configuration are optional convenience paths, not first-touch requirements.
+
 Consumer no-install mode:
 
 ```bash
@@ -106,6 +113,8 @@ python3 -m sdc_cli enforce check --path benchmarks/golden/001-builder-habit-dash
 
 The CLI is intentionally thin. It exposes the command map, prints or inspects prompt files, delegates workspace creation to `tools/spec_scaffold.py`, and runs existing validation. It does not replace agent judgment or the artifact gates.
 
+`list` also reports profile-depth state for every project profile as `depth: PASS` or `depth: FAIL`. Profile-depth packages are decision boundaries, not templates: they constrain stack options, security baseline, performance budget, testing contract, and blueprint fields before implementation.
+
 `integration list` is a repository integration registry utility. It is not a new `/sdc.*` methodology stage and does not alter the official pipeline.
 
 `extension list` and `preset list` are repository discovery utilities. Extensions describe optional method modules; presets describe operational bundles that point to existing profiles, blueprints, prompts, scorecards, fixtures, and gates. They are not `/sdc.*` methodology stages, do not install or apply anything, and do not alter the official pipeline.
@@ -119,6 +128,8 @@ The CLI is intentionally thin. It exposes the command map, prints or inspects pr
 `doctor` runs the full release health check, including all benchmark fixtures and enforcement over the benchmark golden folders. `doctor --quick` preserves the fast smoke path with fixture `001` for local iteration.
 
 The CLI is a navigation and validation aid. It does not generate applications, choose product architecture, or replace the Specification-Driven Coding method.
+
+Future `sdc compile` and `sdc handoff` commands will use `tools/sdc_signature.py`, a stdlib-only DSPy-inspired contract module. They are not implemented in this cycle.
 
 ## GitHub ecosystem utilities
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Minimal linter for the Specification-Driven Coding repository."""
 from pathlib import Path
+import importlib.util
 import json
 import re
 import sys
@@ -58,6 +59,9 @@ REQUIRED_ROOT = [
     "docs/26-continuous-specification-enforcement.md",
     "docs/27-end-to-end-walkthrough.md",
     "docs/28-continuous-specification-enforcement.md",
+    "docs/30-profile-depth-spec.md",
+    "docs/31-decision-space-model.md",
+    "docs/32-anti-template-charter.md",
     ".specify/memory/constitution.md",
     ".specify/templates/overrides/checklist-template.md",
     ".specify/templates/overrides/analysis-template.md",
@@ -75,6 +79,7 @@ REQUIRED_ROOT = [
     "tools/sdc.py",
     "tools/sdc_demo.py",
     "tools/sdc_enforce.py",
+    "tools/sdc_signature.py",
     "sdc_cli/__init__.py",
     "sdc_cli/__main__.py",
     "tools/sdc_harness.py",
@@ -98,6 +103,70 @@ REQUIRED_ROOT = [
     "examples/enforcement-smoke/tasks.md",
     "examples/enforcement-smoke/scorecard.md",
     "examples/enforcement-smoke/app.py",
+]
+
+PROFILE_DEPTH_FILES = {
+    "stack-options.json",
+    "domain-dictionary.json",
+    "security-baseline.md",
+    "performance-budget.json",
+    "testing-contract.md",
+    "blueprint-template.md",
+}
+
+STACK_OPTION_KEYS = {
+    "id",
+    "name",
+    "when_to_use",
+    "when_not_to_use",
+    "rationale",
+    "tradeoffs",
+    "risks",
+}
+
+ROLE_PROMPT_FILES = [
+    "startup-engineer.md",
+    "codebase-auditor.md",
+    "debugging-engineer.md",
+    "performance-engineer.md",
+    "architecture-refactorer.md",
+    "systems-architect.md",
+    "multi-agent-team.md",
+    "frontend-engineer.md",
+    "technical-lead.md",
+    "security-auditor.md",
+    "devops-engineer.md",
+    "ai-engineer.md",
+    "requirements-engineer.md",
+]
+
+ROLE_PROMPT_SECTIONS = [
+    "## Signature",
+    "## Mission",
+    "## Role assumption",
+    "## Deliverables",
+    "## Guardrails",
+    "## Failure modes",
+    "## Scorecard focus",
+    "## Compatible phases",
+    "## Compatible target CLIs",
+]
+
+FORBIDDEN_PROFILE_DEFAULT_TERMS = [
+    "medical",
+    "healthcare",
+    "clinic",
+    "hospital",
+    "legal",
+    "lawyer",
+    "fintech",
+    "banking",
+    "insurance",
+    "restaurant",
+    "gym",
+    "dental",
+    "pharmacy",
+    "real estate",
 ]
 
 REQUIRED_SDC_COMMAND_PROMPTS = {
@@ -443,6 +512,142 @@ def project_profile_ids() -> set[str]:
     return ids
 
 
+def check_profile_depth() -> int:
+    issues = 0
+    profile_ids = project_profile_ids()
+    for profile_id in sorted(profile_ids):
+        depth_dir = ROOT / "project-types" / profile_id
+        if not depth_dir.is_dir():
+            print(f"PROFILE_DEPTH: missing folder project-types/{profile_id}")
+            issues += 1
+            continue
+
+        actual_files = {path.name for path in depth_dir.iterdir() if path.is_file()}
+        missing = sorted(PROFILE_DEPTH_FILES - actual_files)
+        extra = sorted(actual_files - PROFILE_DEPTH_FILES)
+        if missing:
+            print(f"PROFILE_DEPTH: {profile_id} missing files: {', '.join(missing)}")
+            issues += 1
+        if extra:
+            print(f"PROFILE_DEPTH: {profile_id} has extra files: {', '.join(extra)}")
+            issues += 1
+
+        for name in PROFILE_DEPTH_FILES:
+            path = depth_dir / name
+            if path.exists() and not path.read_text(encoding="utf-8", errors="ignore").strip():
+                print(f"PROFILE_DEPTH: {profile_id}/{name} is empty")
+                issues += 1
+
+        stack_path = depth_dir / "stack-options.json"
+        if stack_path.exists():
+            try:
+                stack_payload = json.loads(stack_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError as exc:
+                print(f"PROFILE_DEPTH: {profile_id}/stack-options.json invalid JSON: {exc}")
+                issues += 1
+                stack_payload = {}
+            options = stack_payload.get("options") if isinstance(stack_payload, dict) else None
+            if not isinstance(options, list) or not (3 <= len(options) <= 5):
+                print(f"PROFILE_DEPTH: {profile_id} must define 3-5 stack options")
+                issues += 1
+            else:
+                default_count = sum(1 for option in options if isinstance(option, dict) and option.get("default") is True)
+                if default_count != 1:
+                    print(f"PROFILE_DEPTH: {profile_id} must have exactly one default stack option")
+                    issues += 1
+                for index, option in enumerate(options, start=1):
+                    if not isinstance(option, dict):
+                        print(f"PROFILE_DEPTH: {profile_id} stack option {index} is not an object")
+                        issues += 1
+                        continue
+                    missing_keys = sorted(STACK_OPTION_KEYS - set(option))
+                    if missing_keys:
+                        print(f"PROFILE_DEPTH: {profile_id} stack option {index} missing keys: {', '.join(missing_keys)}")
+                        issues += 1
+                    for key in STACK_OPTION_KEYS:
+                        value = option.get(key)
+                        if not isinstance(value, str) or not value.strip():
+                            print(f"PROFILE_DEPTH: {profile_id} stack option {index} has empty {key}")
+                            issues += 1
+
+        for name in ["domain-dictionary.json", "performance-budget.json"]:
+            path = depth_dir / name
+            if path.exists():
+                try:
+                    json.loads(path.read_text(encoding="utf-8"))
+                except json.JSONDecodeError as exc:
+                    print(f"PROFILE_DEPTH: {profile_id}/{name} invalid JSON: {exc}")
+                    issues += 1
+    return issues
+
+
+def check_role_prompts() -> int:
+    issues = 0
+    role_dir = ROOT / "agents" / "role-prompts"
+    if not role_dir.is_dir():
+        print("ROLE_PROMPTS: missing agents/role-prompts")
+        return 1
+    if not ((role_dir / "README.md").exists() or (role_dir / "INDEX.md").exists()):
+        print("ROLE_PROMPTS: missing README.md or INDEX.md")
+        issues += 1
+    for name in ROLE_PROMPT_FILES:
+        path = role_dir / name
+        if not path.exists():
+            print(f"ROLE_PROMPTS: missing {name}")
+            issues += 1
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for section in ROLE_PROMPT_SECTIONS:
+            if section not in text:
+                print(f"ROLE_PROMPTS: {name} missing section {section}")
+                issues += 1
+    return issues
+
+
+def check_sdc_signatures() -> int:
+    path = ROOT / "tools" / "sdc_signature.py"
+    spec = importlib.util.spec_from_file_location("sdc_signature_check", path)
+    if spec is None or spec.loader is None:
+        print("SIGNATURE: cannot load tools/sdc_signature.py")
+        return 1
+    module = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(module)
+    except Exception as exc:  # pragma: no cover - surfaced by CLI linter output
+        print(f"SIGNATURE: import failed: {exc}")
+        return 1
+    issues = 0
+    for name in ["ProfileSignature", "RolePromptSignature", "DecisionAssertion"]:
+        if not hasattr(module, name):
+            print(f"SIGNATURE: missing class {name}")
+            issues += 1
+    return issues
+
+
+def check_profile_domain_hardcoding() -> int:
+    issues = 0
+    scoped_paths = []
+    for profile_id in project_profile_ids():
+        depth_dir = ROOT / "project-types" / profile_id
+        if depth_dir.exists():
+            scoped_paths.extend(path for path in depth_dir.iterdir() if path.is_file())
+    role_dir = ROOT / "agents" / "role-prompts"
+    if role_dir.exists():
+        scoped_paths.extend(role_dir.glob("*.md"))
+
+    for path in scoped_paths:
+        for line_number, line in enumerate(path.read_text(encoding="utf-8", errors="ignore").splitlines(), start=1):
+            if "[APPLIES_IF example only]" in line or "forbidden" in line.lower():
+                continue
+            lowered = line.lower()
+            for term in FORBIDDEN_PROFILE_DEFAULT_TERMS:
+                pattern = r"\b" + re.escape(term) + r"\b"
+                if re.search(pattern, lowered):
+                    print(f"DOMAIN_DEFAULT: {path.relative_to(ROOT)}:{line_number} contains unscoped term {term}")
+                    issues += 1
+    return issues
+
+
 def check_preset_catalog() -> int:
     path = ROOT / "presets" / "catalog.json"
     issues = 0
@@ -755,6 +960,22 @@ def main() -> int:
     fixture_issues = check_benchmark_fixtures()
     if fixture_issues:
         fail(f"found {fixture_issues} benchmark fixture issues")
+
+    profile_depth_issues = check_profile_depth()
+    if profile_depth_issues:
+        fail(f"found {profile_depth_issues} profile depth issues")
+
+    role_prompt_issues = check_role_prompts()
+    if role_prompt_issues:
+        fail(f"found {role_prompt_issues} role prompt issues")
+
+    signature_issues = check_sdc_signatures()
+    if signature_issues:
+        fail(f"found {signature_issues} signature issues")
+
+    domain_default_issues = check_profile_domain_hardcoding()
+    if domain_default_issues:
+        fail(f"found {domain_default_issues} domain hardcoding issues")
 
     print("PASS: Specification-Driven Coding repo structure is valid")
     print(f"Project profiles: {len(project_files)}")

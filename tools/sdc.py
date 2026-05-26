@@ -20,6 +20,14 @@ PYTHON = sys.executable
 INTEGRATIONS_CATALOG = ROOT / "integrations" / "catalog.json"
 EXTENSIONS_CATALOG = ROOT / "extensions" / "catalog.json"
 PRESETS_CATALOG = ROOT / "presets" / "catalog.json"
+PROFILE_DEPTH_FILES = {
+    "stack-options.json",
+    "domain-dictionary.json",
+    "security-baseline.md",
+    "performance-budget.json",
+    "testing-contract.md",
+    "blueprint-template.md",
+}
 
 
 @dataclass(frozen=True)
@@ -70,6 +78,44 @@ def print_command_list() -> None:
     print("|---|---|---|")
     for command in COMMANDS:
         print(f"| `{command.name}` | `{command.prompt}` | `{command.next_command}` |")
+    print()
+    print("Project profiles:")
+    for profile_id, title in load_project_profiles():
+        print(f"{profile_id:36} {title[:48]:48} depth: {profile_depth_status(profile_id)}")
+
+
+def load_project_profiles() -> list[tuple[str, str]]:
+    profiles: list[tuple[str, str]] = []
+    for path in sorted((ROOT / "project-types").glob("[0-9][0-9]-*.md")):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        profile_id = path.stem[3:]
+        for line in text.splitlines():
+            if line.startswith("- Profile id: `") and line.endswith("`"):
+                profile_id = line.split("`", 2)[1]
+                break
+        title = path.stem[3:]
+        for line in text.splitlines():
+            if line.startswith("# "):
+                title = line[2:].strip()
+                break
+        profiles.append((profile_id, title))
+    return profiles
+
+
+def profile_depth_status(profile_id: str) -> str:
+    depth_dir = ROOT / "project-types" / profile_id
+    if not depth_dir.is_dir():
+        return "FAIL"
+    for name in PROFILE_DEPTH_FILES:
+        path = depth_dir / name
+        if not path.is_file() or not path.read_text(encoding="utf-8", errors="ignore").strip():
+            return "FAIL"
+    for name in ["stack-options.json", "domain-dictionary.json", "performance-budget.json"]:
+        try:
+            json.loads((depth_dir / name).read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return "FAIL"
+    return "PASS"
 
 
 def slugify(value: str) -> str:

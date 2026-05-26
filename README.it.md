@@ -32,6 +32,13 @@ sdc doctor --quick
 
 Differenza chiave: molti workflow si fermano alla specification. Questo la fa rispettare dall'intake alla release.
 
+## Requisiti
+
+- Python 3.11+
+- Git
+
+In modalità consumer project non sono richiesti `uv`, `pipx`, installazione editable, comando globale, configurazione `PATH` o configurazione shell-specific.
+
 ## Modalità consumer project
 
 Per un progetto che vuole usare Specification-Driven Coding come toolkit incorporato, usa una checkout deterministica senza installazione:
@@ -50,6 +57,8 @@ python3 .sdc/tools/sdc.py init "my project" --type marketing-site-cms --out "$PW
 Il vibe coding è veloce: entra un prompt, spesso esce software utilizzabile, e i default del modello diventano silenziosamente il prodotto. I workflow specification-first sono un passo avanti perché strutturano il percorso da richiesta a specification, plan e tasks. Però spesso si fermano agli artefatti, lasciando ad agenti e builder il compito di riempire i dettagli di dominio con i propri default. Le regole editor e le istruzioni per coding agent configurano il comportamento dell'agente, ma non compilano ciò che deve essere costruito in un contratto specifico di costruzione.
 
 Specification-Driven Coding aggiunge gli strati mancanti: project profile che restringono lo spazio progettuale prima del planning, Vertical Blueprint che codificano il prodotto reale, scorecard che valutano gli artefatti con gate espliciti invece che con vibe, e Continuous Specification Enforcement che mantiene allineati specification, blueprint, plan, tasks e implementation mentre il progetto evolve.
+
+I profile sono confini decisionali, non template. Ogni profile descrive una classe di software, il decision space consentito, vincoli anti-default, filtri di rischio, stack option, performance budget, security baseline e testing contract. Le verticali di mercato arrivano dalla raw request, non dai default del profile.
 
 ## Prova il demo
 
@@ -152,10 +161,11 @@ Alla fine restituisci una scorecard 0-100 con gap e prossime correzioni.
 - `docs/20-artifact-toolkit-model.md`: modello operativo di artefatti, comandi, template e validazione.
 - `docs/21-command-model.md`: command model `/sdc.*` per usare la repo come toolkit operativo.
 - `docs/25-english-public-index.md`: policy per documentazione pubblica English-first e companion italiane.
-- `project-types/`: 20 profili progetto per evitare output generici.
+- `project-types/`: 20 profili progetto per evitare output generici. Ogni profile ha un profile-depth package con stack option, domain dictionary, security baseline, performance budget, testing contract e blueprint template.
 - `blueprints/`: contratti verticali per progetti interi, task piccoli, web, mobile, WordPress, RAG e sistemi multi-agente.
 - `prompts/`: prompt operativi per trasformare richieste incomplete in prompt e blueprint specifici.
-- `agents/`: ruoli agentici per prodotto, requirements, UX, platform, AI, security, QA, implementazione e release.
+- `agents/`: ruoli agentici e role prompt per prodotto, requirements, UX, platform, AI, security, QA, implementazione e release.
+- `tools/sdc_signature.py`: contratti tipizzati stdlib-only, ispirati a DSPy, per future fasi compile e handoff.
 - `skills/`: skill riusabili per attivare workflow specifici.
 - `plugins/`: adapter per app builder, AGENTS.md, MCP, Cursor, Claude Code e flussi specification-first.
 - `scorecards/`: rubriche di valutazione per prompt, blueprint, implementazione e sistemi multi-agente.
@@ -251,6 +261,8 @@ python3 .sdc/tools/sdc.py init "my project" --type marketing-site-cms --out "$PW
 L'entrypoint `sdc` è pensato soprattutto per contributor mode e checkout `.sdc` incorporate. Questa release non impacchetta l'intera repository come tool remoto standalone e non installa automaticamente gli asset fuori dalla checkout.
 
 `init` accetta sia `--name` sia una forma shorthand posizionale. Se `--type` manca, la CLI fallisce con un esempio esplicito invece di scaffoldingare in modo implicito.
+
+`sdc compile` e `sdc handoff` sono comandi pianificati per una fase futura. Questo ciclo aggiunge la fondazione profile-depth e i contratti strutturali tipizzati che useranno, ma non implementa ancora quei comandi.
 
 ## Integrazioni, extension e preset
 

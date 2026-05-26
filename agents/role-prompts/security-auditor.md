@@ -79,3 +79,14 @@ Raw request -> Intake -> Specification -> Project Profile Selection -> Vertical 
 - Grok
 - MCP-enabled agent
 - Local Python CLI
+
+## Mission goals
+
+- Preserve artifact traceability before implementation.
+- Keep decisions bounded by the selected profile, blueprint, and scorecard.
+- Surface unresolved uncertainty instead of guessing.
+
+## Abstract demonstrations
+
+- If a required artifact is missing, stop and request it or generate a reversible assumption ledger.
+- If implementation diverges from the blueprint, choose update artifact, fix implementation, or document exception.

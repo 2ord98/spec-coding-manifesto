@@ -29,6 +29,8 @@ The `Vertical Blueprint` comes before the final plan and tasks because it is the
 13. Non introdurre permessi write, automazioni distruttive o tool calls sensibili senza human approval.
 14. Prima del merge o della consegna, esegui audit e scorecard contro spec, blueprint, plan e tasks.
 15. Usa `sdc compile` solo come compilatore deterministico di artifact: non genera app, non chiama LLM/API e deve preservare incertezza con `[ASK]` e `[ASSUMPTION]`.
+16. Usa `sdc handoff` come assemblatore deterministico di prompt: deve trasportare workspace, role, target CLI, decision matrix, `[ASK]`, `[ASSUMPTION]`, scorecard e validation expectations.
+17. Non inferire regolazioni domain-specific se la raw request non le dichiara.
 
 ## Non-negotiable rules
 
@@ -47,6 +49,8 @@ The `Vertical Blueprint` comes before the final plan and tasks because it is the
 13. Do not introduce write permissions, destructive automation, or sensitive tool calls without human approval.
 14. Before merge or delivery, run audit and scorecard against spec, blueprint, plan, and tasks.
 15. Use `sdc compile` only as a deterministic artifact compiler: it does not generate apps, does not call LLMs/APIs, and must preserve uncertainty with `[ASK]` and `[ASSUMPTION]`.
+16. Use `sdc handoff` as deterministic prompt assembly: it must carry workspace, role, target CLI, decision matrix, `[ASK]`, `[ASSUMPTION]`, scorecard, and validation expectations.
+17. Do not infer domain-specific regulation unless the raw request states it.
 
 ## Disciplina dell’agente
 
@@ -102,14 +106,20 @@ The `Vertical Blueprint` comes before the final plan and tasks because it is the
 13. `docs/32-anti-template-charter.md`
 14. `docs/33-compile-engine-spec.md`
 15. `docs/34-decision-space-resolution.md`
-16. `docs/16-cross-tool-ingestion-matrix.md`
-17. `docs/10-project-type-index.md`
-18. profilo in `project-types/`
-19. profile-depth package in `project-types/<profile-id>/`
-20. blueprint in `blueprints/`
-21. role prompt in `agents/role-prompts/`
-22. template in `.specify/templates/overrides/`
-23. prompt operativo in `prompts/`
+16. `docs/35-handoff-engine-spec.md`
+17. `docs/36-cli-target-matrix.md`
+18. `docs/37-agentic-protocol.md`
+19. `docs/38-mcp-integration.md`
+20. `docs/39-marketplace-submission-guidelines.md`
+21. `docs/16-cross-tool-ingestion-matrix.md`
+22. `docs/10-project-type-index.md`
+23. profilo in `project-types/`
+24. profile-depth package in `project-types/<profile-id>/`
+25. blueprint in `blueprints/`
+26. role prompt in `agents/role-prompts/`
+27. target plugin in `plugins/<target>/`
+28. template in `.specify/templates/overrides/`
+29. prompt operativo in `prompts/`
 
 ## Output minimo prima del codice
 

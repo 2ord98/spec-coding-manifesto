@@ -46,7 +46,11 @@ I workflow specification-first di base rendono piu disciplinato il passaggio da 
 
 **Specification-Driven Coding** e un metodo di sviluppo AI-native che compila intenzione umana incompleta in construction contract espliciti, specifici per dominio e ingestibili dai tool prima della generazione del prodotto o dell'implementazione del codice.
 
+Specification-Driven Coding trasforma richieste vaghe in construction contract con decision space limitato.
+
 In questa repository, `spec` significa **specification**. La specificita e l'esito: software ancorato a un utente reale, a un dominio, a un workflow, a uno stack motivato, a un modello dati, a vincoli, postura di sicurezza, test e criteri di valutazione.
+
+Specification-Driven Coding non e uno scaffolder, non e un template generator, non e un prompt-to-app auto-builder, non e un wrapper del vibe coding e non e specializzato in nessun dominio applicativo.
 
 La pipeline ufficiale e:
 

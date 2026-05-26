@@ -66,6 +66,7 @@ git clone https://github.com/2ord98/spec-coding-manifesto.git .sdc
 python3 .sdc/tools/sdc.py doctor --quick
 python3 .sdc/tools/sdc.py init "my project" --type marketing-site-cms --out "$PWD/sdc-workspace"
 python3 .sdc/tools/sdc.py compile --workspace "$PWD/sdc-workspace/specs/001-my-project"
+python3 .sdc/tools/sdc.py handoff --workspace "$PWD/sdc-workspace/specs/001-my-project" --target codex
 ```
 
 Repository contributor mode:
@@ -96,6 +97,8 @@ python3 tools/sdc.py enforce check --workspace examples/enforcement-smoke
 python3 tools/sdc.py enforce check --workspace examples/enforcement-smoke --format json
 python3 tools/sdc.py compile --workspace /private/tmp/sdc-init-smoke/specs/001-domain-app
 python3 tools/sdc.py compile --workspace /private/tmp/sdc-init-smoke/specs/001-domain-app --format json --dry-run
+python3 tools/sdc.py handoff --workspace /private/tmp/sdc-init-smoke/specs/001-domain-app --target generic
+python3 tools/sdc.py handoff --workspace /private/tmp/sdc-init-smoke/specs/001-domain-app --target codex --format json
 sdc enforce check --path benchmarks/golden/001-builder-habit-dashboard
 python3 tools/sdc.py init "domain app" --type full-stack-saas --out /private/tmp/sdc-init-smoke
 python3 tools/sdc.py init --type full-stack-saas --name "domain app"
@@ -120,6 +123,10 @@ The CLI is intentionally thin. It exposes the command map, prints or inspects pr
 
 `compile` is a deterministic artifact compiler. It reads `raw-request.md`, `project-profile.md`, `artifact-manifest.json`, and `project-types/<profile-id>/`, then fills scaffold/placeholder artifact sections while preserving user-written content unless `--force` is used. It does not call models or APIs. It writes unresolved high-impact uncertainty as `[ASK]`, reversible defaults as `[ASSUMPTION]`, and validates output with `DecisionAssertion`.
 
+`handoff` is deterministic prompt assembly. It reads a completed workspace, target CLI, role, and scope, then instantiates `RolePromptSignature` to produce a paste-ready execution packet. It does not call models, execute agents, or judge semantic quality.
+
+Installed convenience form: `sdc handoff --workspace <path> --target generic`.
+
 `integration list` is a repository integration registry utility. It is not a new `/sdc.*` methodology stage and does not alter the official pipeline.
 
 `extension list` and `preset list` are repository discovery utilities. Extensions describe optional method modules; presets describe operational bundles that point to existing profiles, blueprints, prompts, scorecards, fixtures, and gates. They are not `/sdc.*` methodology stages, do not install or apply anything, and do not alter the official pipeline.
@@ -134,7 +141,7 @@ The CLI is intentionally thin. It exposes the command map, prints or inspects pr
 
 The CLI is a navigation and validation aid. It does not generate applications, choose product architecture, or replace the Specification-Driven Coding method.
 
-`tools/sdc_signature.py` contains stdlib-only DSPy-inspired contracts used by compile. `sdc handoff` is not implemented in this cycle.
+`tools/sdc_signature.py` contains stdlib-only DSPy-inspired contracts used by compile and handoff.
 
 ## GitHub ecosystem utilities
 

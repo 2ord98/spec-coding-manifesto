@@ -4,6 +4,8 @@
 
 - Updated the `sdc` CLI wrapper to prefer an embedded `.sdc/tools/sdc.py` checkout from consumer projects before falling back to contributor checkout behavior.
 - Documented deterministic no-install consumer usage and clarified that editable install may create local `.egg-info` metadata.
+- Added profile-depth metadata, deterministic `sdc compile`, compile fixture 004, and executable compile assertions.
+- Added deterministic `sdc handoff`, target-specific prompt assembly, CLI target matrix, agentic protocol docs, MCP design metadata, and marketplace-readiness guidance.
 
 ## 0.5.0
 

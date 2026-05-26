@@ -62,6 +62,8 @@ REQUIRED_ROOT = [
     "docs/30-profile-depth-spec.md",
     "docs/31-decision-space-model.md",
     "docs/32-anti-template-charter.md",
+    "docs/33-compile-engine-spec.md",
+    "docs/34-decision-space-resolution.md",
     ".specify/memory/constitution.md",
     ".specify/templates/overrides/checklist-template.md",
     ".specify/templates/overrides/analysis-template.md",
@@ -79,6 +81,7 @@ REQUIRED_ROOT = [
     "tools/sdc.py",
     "tools/sdc_demo.py",
     "tools/sdc_enforce.py",
+    "tools/sdc_compile.py",
     "tools/sdc_signature.py",
     "sdc_cli/__init__.py",
     "sdc_cli/__main__.py",
@@ -86,6 +89,10 @@ REQUIRED_ROOT = [
     "benchmarks/fixtures/001-builder-habit-dashboard/raw-prompt.md",
     "benchmarks/fixtures/001-builder-habit-dashboard/sdc-prompt.md",
     "benchmarks/fixtures/001-builder-habit-dashboard/expected.json",
+    "benchmarks/fixtures/004-compile-structural-validation/raw-request.md",
+    "benchmarks/fixtures/004-compile-structural-validation/expected.json",
+    "benchmarks/golden/004-compile-structural-validation/blueprint.md",
+    "benchmarks/golden/004-compile-structural-validation/scorecard.md",
     "benchmarks/golden/001-builder-habit-dashboard/intake.md",
     "benchmarks/golden/001-builder-habit-dashboard/spec.md",
     "benchmarks/golden/001-builder-habit-dashboard/blueprint.md",
@@ -313,7 +320,7 @@ def check_sdc_cli_mapping() -> int:
         if not any(rel in text for rel in rels):
             print(f"CLI: tools/sdc.py missing prompt mapping for {command}: {', '.join(rels)}")
             issues += 1
-    for utility in ["tools/sdc_demo.py", "tools/sdc_enforce.py", "demo", "enforce"]:
+    for utility in ["tools/sdc_demo.py", "tools/sdc_enforce.py", "tools/sdc_compile.py", "demo", "enforce", "compile"]:
         if utility not in text:
             print(f"CLI: tools/sdc.py missing utility mapping for {utility}")
             issues += 1
@@ -784,10 +791,21 @@ def check_benchmark_fixtures() -> int:
     fixtures_root = ROOT / "benchmarks" / "fixtures"
     golden_root = ROOT / "benchmarks" / "golden"
     required_golden = ["intake.md", "spec.md", "blueprint.md", "plan.md", "tasks.md", "scorecard.md"]
+    compile_expected_keys = {
+        "critical_sections_filled": bool,
+        "has_default_marker": bool,
+        "ask_count_min": int,
+        "assumption_count_min": int,
+        "score_min": int,
+        "required_sections": list,
+        "forbidden_empty_sections": bool,
+        "default_marker_text": str,
+    }
     for fixture_dir in sorted(path for path in fixtures_root.iterdir() if path.is_dir()):
         fixture = fixture_dir.name
         expected_path = fixture_dir / "expected.json"
-        for name in ["raw-prompt.md", "sdc-prompt.md", "expected.json"]:
+        fixture_required = ["raw-request.md", "expected.json"] if fixture == "004-compile-structural-validation" else ["raw-prompt.md", "sdc-prompt.md", "expected.json"]
+        for name in fixture_required:
             if not (fixture_dir / name).exists():
                 print(f"FIXTURE: {fixture} missing {name}")
                 issues += 1
@@ -798,10 +816,19 @@ def check_benchmark_fixtures() -> int:
                 print(f"FIXTURE: {fixture} invalid expected.json: {exc}")
                 issues += 1
                 expected = {}
-            for key in ["project_profile", "anti_genericity_constraints", "acceptance_criteria", "stack_rationale", "quality_gates"]:
-                if not expected.get(key):
-                    print(f"FIXTURE: {fixture} missing expected key {key}")
+            if fixture == "004-compile-structural-validation":
+                if set(expected) != set(compile_expected_keys):
+                    print(f"FIXTURE: {fixture} expected.json must contain only compile threshold keys")
                     issues += 1
+                for key, expected_type in compile_expected_keys.items():
+                    if not isinstance(expected.get(key), expected_type):
+                        print(f"FIXTURE: {fixture} expected key {key} has wrong type")
+                        issues += 1
+            else:
+                for key in ["project_profile", "anti_genericity_constraints", "acceptance_criteria", "stack_rationale", "quality_gates"]:
+                    if not expected.get(key):
+                        print(f"FIXTURE: {fixture} missing expected key {key}")
+                        issues += 1
         golden_dir = golden_root / fixture
         for name in required_golden:
             if not (golden_dir / name).exists():

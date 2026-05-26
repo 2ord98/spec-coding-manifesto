@@ -1,0 +1,23 @@
+{
+  "critical_sections_filled": true,
+  "has_default_marker": true,
+  "ask_count_min": 3,
+  "assumption_count_min": 2,
+  "score_min": 80,
+  "required_sections": [
+    "Domain contract",
+    "Mode contract",
+    "Stack decision space",
+    "File tree contract",
+    "Architecture contract",
+    "Data/API/tool contracts",
+    "UX/design/motion contract",
+    "Security hardening contract",
+    "Performance budget",
+    "Testing contract",
+    "Output contract",
+    "Scorecard"
+  ],
+  "forbidden_empty_sections": true,
+  "default_marker_text": "[DEFAULT \u2014 review and override if needed]"
+}

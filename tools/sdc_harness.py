@@ -5,11 +5,20 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
+import subprocess
+import sys
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from tools.sdc_signature import DecisionAssertion
+
 FIXTURES = ROOT / "benchmarks" / "fixtures"
 GOLDEN = ROOT / "benchmarks" / "golden"
 REPORTS = ROOT / "benchmarks" / "reports"
@@ -30,6 +39,7 @@ EXPECTED_KEYS = [
     "stack_rationale",
     "quality_gates",
 ]
+COMPILE_FIXTURE = "004-compile-structural-validation"
 
 
 @dataclass(frozen=True)
@@ -52,7 +62,157 @@ def load_expected(fixture: str) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def section_body(text: str, section: str) -> str:
+    pattern = re.compile(rf"^## {re.escape(section)}\s*$", flags=re.MULTILINE)
+    match = pattern.search(text)
+    if not match:
+        return ""
+    next_match = re.search(r"^## .+$", text[match.end() :], flags=re.MULTILINE)
+    end = match.end() + next_match.start() if next_match else len(text)
+    return text[match.end() : end].strip()
+
+
+def blueprint_score(path: Path) -> int:
+    completed = subprocess.run(
+        [sys.executable, "tools/score_blueprint.py", str(path)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    match = re.search(r"Blueprint score:\s*(\d+)/100", completed.stdout)
+    if not match:
+        return 0
+    return int(match.group(1))
+
+
+def check_compile_fixture(fixture: str) -> list[Check]:
+    fixture_dir = FIXTURES / fixture
+    golden_dir = GOLDEN / fixture
+    expected = load_expected(fixture)
+    checks: list[Check] = []
+
+    expected_fields = {
+        "critical_sections_filled": bool,
+        "has_default_marker": bool,
+        "ask_count_min": int,
+        "assumption_count_min": int,
+        "score_min": int,
+        "required_sections": list,
+        "forbidden_empty_sections": bool,
+        "default_marker_text": str,
+    }
+    for key, expected_type in expected_fields.items():
+        checks.append(Check(f"expected has {key}", isinstance(expected.get(key), expected_type), key))
+
+    for name in ["raw-request.md", "expected.json"]:
+        path = fixture_dir / name
+        checks.append(Check(f"fixture has {name}", path.exists(), str(path.relative_to(ROOT))))
+
+    required_workspace = [
+        "raw-request.md",
+        "intake.md",
+        "spec.md",
+        "project-profile.md",
+        "blueprint.md",
+        "plan.md",
+        "tasks.md",
+        "scorecard.md",
+        "artifact-manifest.json",
+    ]
+    for name in required_workspace:
+        path = golden_dir / name
+        checks.append(Check(f"golden has {name}", path.exists(), str(path.relative_to(ROOT))))
+
+    if any(not check.passed for check in checks):
+        return checks
+
+    with tempfile.TemporaryDirectory(prefix="sdc-harness-004-") as temp:
+        temp_workspace = Path(temp) / "workspace"
+        shutil.copytree(golden_dir, temp_workspace)
+        shutil.copy2(fixture_dir / "raw-request.md", temp_workspace / "raw-request.md")
+        completed = subprocess.run(
+            [
+                sys.executable,
+                "tools/sdc_compile.py",
+                "compile",
+                "--workspace",
+                str(temp_workspace),
+                "--force",
+                "--format",
+                "json",
+            ],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        checks.append(Check("compile command exits 0", completed.returncode == 0, completed.stderr.strip() or "exit 0"))
+        try:
+            compile_payload = json.loads(completed.stdout)
+        except json.JSONDecodeError:
+            compile_payload = {}
+            checks.append(Check("compile output is JSON", False, completed.stdout[:120]))
+        else:
+            checks.append(Check("compile output is JSON", True, "parsed"))
+
+        blueprint = (temp_workspace / "blueprint.md").read_text(encoding="utf-8", errors="ignore")
+        corpus = "\n".join(
+            (temp_workspace / name).read_text(encoding="utf-8", errors="ignore")
+            for name in ["intake.md", "spec.md", "blueprint.md", "plan.md", "tasks.md", "scorecard.md"]
+        )
+        required_sections = expected.get("required_sections", [])
+        missing_sections = [section for section in required_sections if f"## {section}" not in blueprint]
+        checks.append(Check("required sections present", not missing_sections, ", ".join(missing_sections) or "covered"))
+
+        empty_sections = [section for section in required_sections if not section_body(blueprint, section)]
+        critical_filled = not empty_sections
+        if expected.get("forbidden_empty_sections"):
+            checks.append(Check("forbidden empty sections", critical_filled, ", ".join(empty_sections) or "none"))
+
+        marker = expected.get("default_marker_text", "")
+        has_default_marker = marker in blueprint
+        checks.append(Check("default marker present", has_default_marker, marker))
+
+        ask_count = corpus.count("[ASK:")
+        assumption_count = corpus.count("[ASSUMPTION:")
+        assertion = DecisionAssertion(
+            critical_section_filled=critical_filled,
+            has_default_marker=has_default_marker,
+            ask_count=ask_count,
+            assumption_count=assumption_count,
+            score_min=expected.get("score_min", 80),
+        )
+        report = assertion.report()
+        checks.append(Check("DecisionAssertion passes", bool(report["passes"]), json.dumps(report, sort_keys=True)))
+        checks.append(Check("ask threshold", ask_count >= expected.get("ask_count_min", 0), f"{ask_count}"))
+        checks.append(
+            Check(
+                "assumption threshold",
+                assumption_count >= expected.get("assumption_count_min", 0),
+                f"{assumption_count}",
+            )
+        )
+        checks.append(Check("security baseline included", "Security Baseline" in blueprint, "Security Baseline"))
+        checks.append(Check("performance budget included", "startup_or_first_response" in blueprint, "startup_or_first_response"))
+        checks.append(Check("testing contract included", "Testing Contract" in blueprint, "Testing Contract"))
+        checks.append(Check("scorecard exists", (temp_workspace / "scorecard.md").exists(), "scorecard.md"))
+        score = blueprint_score(temp_workspace / "blueprint.md")
+        checks.append(Check("blueprint score threshold", score >= expected.get("score_min", 80), f"{score}/100"))
+        checks.append(
+            Check(
+                "json includes assertion report",
+                isinstance(compile_payload.get("assertion"), dict),
+                "assertion" if compile_payload else "missing",
+            )
+        )
+    return checks
+
+
 def check_fixture(fixture: str) -> list[Check]:
+    if fixture == COMPILE_FIXTURE:
+        return check_compile_fixture(fixture)
+
     fixture_dir = FIXTURES / fixture
     golden_dir = GOLDEN / fixture
     expected = load_expected(fixture)

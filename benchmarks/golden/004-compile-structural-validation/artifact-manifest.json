@@ -1,0 +1,32 @@
+{
+  "methodology": "Specification-Driven Coding",
+  "official_pipeline": [
+    "Raw request",
+    "Intake",
+    "Specification",
+    "Project Profile Selection",
+    "Vertical Blueprint",
+    "Plan",
+    "Tasks",
+    "Implementation",
+    "Evaluation Scorecard",
+    "Release/Iteration"
+  ],
+  "project_profile": "full-stack-saas",
+  "artifacts": [
+    "raw-request.md",
+    "intake.md",
+    "spec.md",
+    "project-profile.md",
+    "blueprint.md",
+    "plan.md",
+    "tasks.md",
+    "scorecard.md",
+    "artifact-manifest.json"
+  ],
+  "gates": [
+    "Clarify or declare reversible assumptions before blueprint",
+    "Compile Vertical Blueprint before final plan and tasks",
+    "Validate implementation against scorecard before release"
+  ]
+}

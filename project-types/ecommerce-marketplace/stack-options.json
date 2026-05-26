@@ -1,0 +1,37 @@
+{
+  "profile_id": "ecommerce-marketplace",
+  "software_class": "catalog, transaction, booking, or multi-party commerce workflow",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "managed-commerce-platform",
+      "name": "Managed commerce platform integration",
+      "default": true,
+      "when_to_use": "Standard catalog, checkout, and order flows fit the scope.",
+      "when_not_to_use": "Avoid when transaction rules are highly custom.",
+      "rationale": "Reduces payment and order infrastructure burden.",
+      "tradeoffs": "Customization depends on platform limits.",
+      "risks": "Platform constraints can shape product behavior too much."
+    },
+    {
+      "id": "custom-transaction-app",
+      "name": "Custom transaction application",
+      "default": false,
+      "when_to_use": "Workflow rules, roles, or booking states are unique.",
+      "when_not_to_use": "Avoid when managed commerce covers the need.",
+      "rationale": "Gives full control over domain logic.",
+      "tradeoffs": "Requires stronger security and operational design.",
+      "risks": "Transaction edge cases can expand scope quickly."
+    },
+    {
+      "id": "catalog-request-flow",
+      "name": "Catalog plus request flow",
+      "default": false,
+      "when_to_use": "Users browse options but final commitment happens offline or manually.",
+      "when_not_to_use": "Avoid when self-service checkout is required.",
+      "rationale": "Keeps scope lightweight while preserving discovery.",
+      "tradeoffs": "Manual operations need clear handoff.",
+      "risks": "Conversion metrics can be harder to attribute."
+    }
+  ]
+}

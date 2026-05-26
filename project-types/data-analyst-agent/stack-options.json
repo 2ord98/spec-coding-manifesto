@@ -1,0 +1,37 @@
+{
+  "profile_id": "data-analyst-agent",
+  "software_class": "analysis assistant over datasets, metrics, and queryable business data",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "notebook-assistant",
+      "name": "Notebook-centered assistant",
+      "default": true,
+      "when_to_use": "Exploratory analysis and reproducibility are central.",
+      "when_not_to_use": "Avoid when non-technical users need a product UI.",
+      "rationale": "Keeps analysis transparent and inspectable.",
+      "tradeoffs": "Less polished for recurring business workflows.",
+      "risks": "Notebook state can hide assumptions."
+    },
+    {
+      "id": "text-to-query-layer",
+      "name": "Text-to-query layer",
+      "default": false,
+      "when_to_use": "Users need natural language access to governed data.",
+      "when_not_to_use": "Avoid when schema ambiguity is high and governance is absent.",
+      "rationale": "Improves access while preserving query review.",
+      "tradeoffs": "Needs schema metadata and safety checks.",
+      "risks": "Generated queries can be wrong with confidence."
+    },
+    {
+      "id": "analytics-app",
+      "name": "Analytics application",
+      "default": false,
+      "when_to_use": "Recurring analysis needs a controlled interface.",
+      "when_not_to_use": "Avoid for open-ended exploration.",
+      "rationale": "Productizes common analytical workflows.",
+      "tradeoffs": "Less flexible than notebooks.",
+      "risks": "Metric drift can occur without governance."
+    }
+  ]
+}

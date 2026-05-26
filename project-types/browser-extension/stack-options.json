@@ -1,0 +1,37 @@
+{
+  "profile_id": "browser-extension",
+  "software_class": "browser extension or web augmentation layer with permission constraints",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "content-script-extension",
+      "name": "Content script extension",
+      "default": true,
+      "when_to_use": "The extension augments pages directly.",
+      "when_not_to_use": "Avoid when background automation is the main behavior.",
+      "rationale": "Keeps augmentation close to the page context.",
+      "tradeoffs": "DOM changes are fragile.",
+      "risks": "Host permission scope can become too broad."
+    },
+    {
+      "id": "background-service-extension",
+      "name": "Background service extension",
+      "default": false,
+      "when_to_use": "Events, storage, or cross-page coordination are central.",
+      "when_not_to_use": "Avoid when page-only augmentation is enough.",
+      "rationale": "Supports persistent extension workflows.",
+      "tradeoffs": "Lifecycle behavior can be subtle.",
+      "risks": "Background permissions need review."
+    },
+    {
+      "id": "side-panel-extension",
+      "name": "Side panel extension",
+      "default": false,
+      "when_to_use": "Users need a persistent assistant or tool surface.",
+      "when_not_to_use": "Avoid when inline page action is better.",
+      "rationale": "Separates tool UI from page content.",
+      "tradeoffs": "Panel context can drift from page state.",
+      "risks": "UX may feel detached without clear sync."
+    }
+  ]
+}

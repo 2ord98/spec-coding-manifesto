@@ -1,0 +1,37 @@
+{
+  "profile_id": "workflow-automation-rpa",
+  "software_class": "automation workflow across tools, approvals, and repetitive operations",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "api-orchestration",
+      "name": "API orchestration workflow",
+      "default": true,
+      "when_to_use": "Systems expose stable APIs and clear auth boundaries.",
+      "when_not_to_use": "Avoid when required systems lack API access.",
+      "rationale": "Keeps automation auditable and resilient.",
+      "tradeoffs": "Depends on API coverage and quotas.",
+      "risks": "Integration changes can break workflows."
+    },
+    {
+      "id": "human-in-loop-automation",
+      "name": "Human-in-loop automation",
+      "default": false,
+      "when_to_use": "Approvals or review are required before action.",
+      "when_not_to_use": "Avoid when fully deterministic automation is safe.",
+      "rationale": "Preserves control over risky steps.",
+      "tradeoffs": "Adds latency and notification design.",
+      "risks": "Approvers can become bottlenecks."
+    },
+    {
+      "id": "desktop-rpa",
+      "name": "Desktop RPA workflow",
+      "default": false,
+      "when_to_use": "No stable API exists and UI automation is the only route.",
+      "when_not_to_use": "Avoid when API or export integration is available.",
+      "rationale": "Can automate legacy workflows.",
+      "tradeoffs": "Fragile against UI changes.",
+      "risks": "Credentials and unattended execution are risks."
+    }
+  ]
+}

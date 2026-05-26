@@ -1,0 +1,27 @@
+{
+  "profile_id": "ecommerce-marketplace",
+  "software_class": "catalog, transaction, booking, or multi-party commerce workflow",
+  "common_users": [
+    "buyer",
+    "seller or provider",
+    "operations admin"
+  ],
+  "common_artifacts": [
+    "catalog model",
+    "transaction lifecycle",
+    "fulfillment states",
+    "dispute or exception flow"
+  ],
+  "anti_patterns": [
+    "checkout before trust model",
+    "inventory without ownership rules",
+    "generic product grid as product strategy"
+  ],
+  "assumption_prompts": [
+    "[ASK] What user role owns the primary workflow?",
+    "[ASK] Which constraints make the default stack unsuitable?",
+    "[ASSUMPTION] Treat missing product details as reversible until confirmed.",
+    "[ASSUMPTION] Prefer the smallest architecture that satisfies explicit evidence."
+  ],
+  "domain_boundary": "Class-specific terms describe software behavior, not a market vertical default."
+}

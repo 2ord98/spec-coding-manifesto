@@ -1,0 +1,37 @@
+{
+  "profile_id": "dashboard-admin-bi",
+  "software_class": "operational dashboard, admin panel, analytics, or business intelligence surface",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "server-rendered-admin",
+      "name": "Server-rendered admin interface",
+      "default": true,
+      "when_to_use": "Operational workflows are form-heavy and need reliability.",
+      "when_not_to_use": "Avoid when highly interactive analysis is central.",
+      "rationale": "Prioritizes maintainability and permissions.",
+      "tradeoffs": "Less fluid for advanced exploration.",
+      "risks": "Can become a CRUD panel without workflow design."
+    },
+    {
+      "id": "interactive-bi-app",
+      "name": "Interactive BI application",
+      "default": false,
+      "when_to_use": "Users need slicing, drilldowns, and exploratory analysis.",
+      "when_not_to_use": "Avoid when metrics are fixed and operational.",
+      "rationale": "Supports rich investigation workflows.",
+      "tradeoffs": "Client complexity and data loading increase.",
+      "risks": "Charts may outpace metric governance."
+    },
+    {
+      "id": "embedded-dashboard",
+      "name": "Embedded dashboard layer",
+      "default": false,
+      "when_to_use": "Analytics must live inside an existing product surface.",
+      "when_not_to_use": "Avoid when standalone operations are required.",
+      "rationale": "Keeps context close to user workflow.",
+      "tradeoffs": "Depends on host application constraints.",
+      "risks": "Permissions may be duplicated poorly."
+    }
+  ]
+}

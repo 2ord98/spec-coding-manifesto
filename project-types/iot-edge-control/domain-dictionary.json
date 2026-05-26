@@ -1,0 +1,28 @@
+{
+  "profile_id": "iot-edge-control",
+  "software_class": "device, edge, sensor, or control system with physical-world constraints",
+  "common_users": [
+    "operator",
+    "field maintainer",
+    "system owner"
+  ],
+  "common_artifacts": [
+    "device inventory",
+    "telemetry contract",
+    "control loop",
+    "safety boundary",
+    "offline policy"
+  ],
+  "anti_patterns": [
+    "cloud-only control for edge-critical behavior",
+    "no safety state",
+    "unbounded remote commands"
+  ],
+  "assumption_prompts": [
+    "[ASK] What user role owns the primary workflow?",
+    "[ASK] Which constraints make the default stack unsuitable?",
+    "[ASSUMPTION] Treat missing product details as reversible until confirmed.",
+    "[ASSUMPTION] Prefer the smallest architecture that satisfies explicit evidence."
+  ],
+  "domain_boundary": "Class-specific terms describe software behavior, not a market vertical default."
+}

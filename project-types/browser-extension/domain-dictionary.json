@@ -1,0 +1,27 @@
+{
+  "profile_id": "browser-extension",
+  "software_class": "browser extension or web augmentation layer with permission constraints",
+  "common_users": [
+    "browser user",
+    "workspace admin",
+    "extension maintainer"
+  ],
+  "common_artifacts": [
+    "permission manifest",
+    "content script map",
+    "background behavior",
+    "data boundary"
+  ],
+  "anti_patterns": [
+    "broad permissions by default",
+    "DOM mutation without rollback",
+    "no browser compatibility plan"
+  ],
+  "assumption_prompts": [
+    "[ASK] What user role owns the primary workflow?",
+    "[ASK] Which constraints make the default stack unsuitable?",
+    "[ASSUMPTION] Treat missing product details as reversible until confirmed.",
+    "[ASSUMPTION] Prefer the smallest architecture that satisfies explicit evidence."
+  ],
+  "domain_boundary": "Class-specific terms describe software behavior, not a market vertical default."
+}

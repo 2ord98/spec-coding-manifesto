@@ -1,0 +1,37 @@
+{
+  "profile_id": "content-generation-studio",
+  "software_class": "content production, review, versioning, and publishing workspace",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "editorial-workspace",
+      "name": "Editorial workspace",
+      "default": true,
+      "when_to_use": "Humans review and shape generated content before publishing.",
+      "when_not_to_use": "Avoid when only one-off generation is needed.",
+      "rationale": "Centers workflow and quality control.",
+      "tradeoffs": "Requires UX for drafts and reviews.",
+      "risks": "Too much workflow can slow creation."
+    },
+    {
+      "id": "batch-generation-pipeline",
+      "name": "Batch generation pipeline",
+      "default": false,
+      "when_to_use": "Large sets of content need repeatable production.",
+      "when_not_to_use": "Avoid when each item needs bespoke editing.",
+      "rationale": "Improves throughput and consistency.",
+      "tradeoffs": "Needs sampling and quality gates.",
+      "risks": "Scale can amplify low-quality patterns."
+    },
+    {
+      "id": "template-assisted-studio",
+      "name": "Template-assisted studio",
+      "default": false,
+      "when_to_use": "Content follows repeatable structures with controlled variation.",
+      "when_not_to_use": "Avoid when originality and exploration dominate.",
+      "rationale": "Keeps outputs consistent and reviewable.",
+      "tradeoffs": "Templates can become generic.",
+      "risks": "Over-constrained prompts reduce usefulness."
+    }
+  ]
+}

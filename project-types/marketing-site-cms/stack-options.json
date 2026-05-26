@@ -1,0 +1,47 @@
+{
+  "profile_id": "marketing-site-cms",
+  "software_class": "public content, conversion, documentation, or lightweight CMS surface",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "static-site",
+      "name": "Static site generator",
+      "default": true,
+      "when_to_use": "Content is mostly stable and editorial velocity is low.",
+      "when_not_to_use": "Avoid when per-user state or frequent editorial workflows dominate.",
+      "rationale": "Keeps delivery simple, fast, and auditable.",
+      "tradeoffs": "Limited runtime personalization and editorial workflow depth.",
+      "risks": "Content rebuild workflow can become a bottleneck."
+    },
+    {
+      "id": "ssr-content-site",
+      "name": "Server-rendered content site",
+      "default": false,
+      "when_to_use": "Content needs routing, previews, forms, or controlled dynamic behavior.",
+      "when_not_to_use": "Avoid when static hosting fully satisfies the requirements.",
+      "rationale": "Balances content performance with runtime flexibility.",
+      "tradeoffs": "More operational surface than static output.",
+      "risks": "Server concerns can creep into a content-only project."
+    },
+    {
+      "id": "lightweight-cms",
+      "name": "Lightweight CMS-backed site",
+      "default": false,
+      "when_to_use": "Non-technical editors need structured publishing workflows.",
+      "when_not_to_use": "Avoid when content is small and owner can edit repository files.",
+      "rationale": "Separates content operations from presentation.",
+      "tradeoffs": "CMS selection adds migration and auth considerations.",
+      "risks": "Editorial model can become too generic without a content contract."
+    },
+    {
+      "id": "interactive-web-app",
+      "name": "Interactive web application surface",
+      "default": false,
+      "when_to_use": "The public site includes substantial product interaction or account-like flows.",
+      "when_not_to_use": "Avoid when interaction is limited to content and contact forms.",
+      "rationale": "Allows richer state while preserving explicit scope.",
+      "tradeoffs": "Can overbuild a content project.",
+      "risks": "Client-side complexity can harm performance budgets."
+    }
+  ]
+}

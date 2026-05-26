@@ -1,0 +1,28 @@
+{
+  "profile_id": "dashboard-admin-bi",
+  "software_class": "operational dashboard, admin panel, analytics, or business intelligence surface",
+  "common_users": [
+    "operator",
+    "manager",
+    "analyst"
+  ],
+  "common_artifacts": [
+    "metric dictionary",
+    "filter model",
+    "permission matrix",
+    "data freshness policy"
+  ],
+  "anti_patterns": [
+    "charts without decisions",
+    "generic cards",
+    "unclear metric definitions",
+    "admin power without audit"
+  ],
+  "assumption_prompts": [
+    "[ASK] What user role owns the primary workflow?",
+    "[ASK] Which constraints make the default stack unsuitable?",
+    "[ASSUMPTION] Treat missing product details as reversible until confirmed.",
+    "[ASSUMPTION] Prefer the smallest architecture that satisfies explicit evidence."
+  ],
+  "domain_boundary": "Class-specific terms describe software behavior, not a market vertical default."
+}

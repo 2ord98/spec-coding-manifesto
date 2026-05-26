@@ -1,0 +1,37 @@
+{
+  "profile_id": "education-tutor-lms",
+  "software_class": "learning workflow, tutoring assistant, course platform, or assessment system",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "course-platform",
+      "name": "Course platform",
+      "default": true,
+      "when_to_use": "Structured learning paths and progress tracking are central.",
+      "when_not_to_use": "Avoid when only lightweight content publishing is needed.",
+      "rationale": "Aligns content, progress, and assessment.",
+      "tradeoffs": "Requires content operations and learner state.",
+      "risks": "Can become generic without learning objectives."
+    },
+    {
+      "id": "tutor-assistant",
+      "name": "Tutor assistant",
+      "default": false,
+      "when_to_use": "Adaptive guidance and feedback are primary.",
+      "when_not_to_use": "Avoid when static course delivery is enough.",
+      "rationale": "Supports individualized help within boundaries.",
+      "tradeoffs": "Needs safety and answer policy.",
+      "risks": "May over-answer without pedagogy constraints."
+    },
+    {
+      "id": "assessment-workflow",
+      "name": "Assessment workflow",
+      "default": false,
+      "when_to_use": "Evaluation, submissions, and feedback dominate.",
+      "when_not_to_use": "Avoid when assessment is secondary.",
+      "rationale": "Makes grading and feedback policies explicit.",
+      "tradeoffs": "Fairness and review processes are required.",
+      "risks": "Automation can obscure instructor judgment."
+    }
+  ]
+}

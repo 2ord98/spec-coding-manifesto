@@ -1,0 +1,27 @@
+{
+  "profile_id": "backend-api-microservices",
+  "software_class": "server-side API, integration service, or distributed backend system",
+  "common_users": [
+    "API consumer",
+    "service operator",
+    "integration owner"
+  ],
+  "common_artifacts": [
+    "API contract",
+    "service boundary map",
+    "data ownership model",
+    "observability plan"
+  ],
+  "anti_patterns": [
+    "microservices before team or scaling need",
+    "unversioned APIs",
+    "hidden shared database coupling"
+  ],
+  "assumption_prompts": [
+    "[ASK] What user role owns the primary workflow?",
+    "[ASK] Which constraints make the default stack unsuitable?",
+    "[ASSUMPTION] Treat missing product details as reversible until confirmed.",
+    "[ASSUMPTION] Prefer the smallest architecture that satisfies explicit evidence."
+  ],
+  "domain_boundary": "Class-specific terms describe software behavior, not a market vertical default."
+}

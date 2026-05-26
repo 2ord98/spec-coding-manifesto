@@ -1,0 +1,37 @@
+{
+  "profile_id": "multi-agent-control-system",
+  "software_class": "coordinated agent workflow with roles, authority boundaries, and verification gates",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "orchestrator-workers",
+      "name": "Orchestrator and workers",
+      "default": true,
+      "when_to_use": "A central controller can route bounded tasks to specialized roles.",
+      "when_not_to_use": "Avoid when peer coordination is required.",
+      "rationale": "Keeps authority and audit path clear.",
+      "tradeoffs": "Controller can become a bottleneck.",
+      "risks": "Poor task decomposition weakens results."
+    },
+    {
+      "id": "planner-executor-verifier",
+      "name": "Planner executor verifier loop",
+      "default": false,
+      "when_to_use": "High-risk output requires explicit review before action.",
+      "when_not_to_use": "Avoid when latency matters more than assurance.",
+      "rationale": "Separates creation from verification.",
+      "tradeoffs": "More steps and artifacts are required.",
+      "risks": "Verifier criteria can be too shallow."
+    },
+    {
+      "id": "evented-agent-system",
+      "name": "Evented agent system",
+      "default": false,
+      "when_to_use": "Agents react to durable events and long-running workflows.",
+      "when_not_to_use": "Avoid for short synchronous tasks.",
+      "rationale": "Supports resilience and observability.",
+      "tradeoffs": "State management is more complex.",
+      "risks": "Event storms and retries need careful limits."
+    }
+  ]
+}

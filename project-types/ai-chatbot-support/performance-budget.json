@@ -1,0 +1,12 @@
+{
+  "profile_id": "ai-chatbot-support",
+  "budget_type": "class-level review targets",
+  "targets": {
+    "startup_or_first_response": "Define a measurable first-use or first-response target before implementation.",
+    "steady_state_latency": "Document acceptable latency for the primary workflow.",
+    "resource_budget": "Set explicit CPU, memory, network, storage, or bundle-size limits when relevant.",
+    "failure_recovery": "Define timeout, retry, fallback, and degraded-mode behavior.",
+    "observability": "Identify the minimum signals needed to detect performance drift."
+  },
+  "review_rule": "Budgets are constraints for the Vertical Blueprint; override only with rationale and rejected alternative."
+}

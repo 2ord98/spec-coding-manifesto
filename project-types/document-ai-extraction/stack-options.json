@@ -1,0 +1,37 @@
+{
+  "profile_id": "document-ai-extraction",
+  "software_class": "document ingestion, extraction, classification, and review workflow",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "rules-and-ocr-pipeline",
+      "name": "Rules and OCR pipeline",
+      "default": true,
+      "when_to_use": "Documents have predictable structure and explainability matters.",
+      "when_not_to_use": "Avoid when layouts vary heavily or language reasoning dominates.",
+      "rationale": "Keeps extraction transparent and testable.",
+      "tradeoffs": "Lower flexibility for varied input.",
+      "risks": "Rules can become brittle across formats."
+    },
+    {
+      "id": "model-assisted-extraction",
+      "name": "Model-assisted extraction",
+      "default": false,
+      "when_to_use": "Fields require language understanding or layout variation handling.",
+      "when_not_to_use": "Avoid when deterministic parsing is enough.",
+      "rationale": "Handles varied documents with richer context.",
+      "tradeoffs": "Needs confidence and review gates.",
+      "risks": "Model drift can affect extraction quality."
+    },
+    {
+      "id": "human-review-workbench",
+      "name": "Human review workbench",
+      "default": false,
+      "when_to_use": "Accuracy, corrections, and auditability are central.",
+      "when_not_to_use": "Avoid for low-risk batch extraction.",
+      "rationale": "Creates quality feedback and audit trail.",
+      "tradeoffs": "Adds review operations and UI scope.",
+      "risks": "Queue design can dominate project effort."
+    }
+  ]
+}

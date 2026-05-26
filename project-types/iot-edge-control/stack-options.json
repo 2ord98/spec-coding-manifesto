@@ -1,0 +1,37 @@
+{
+  "profile_id": "iot-edge-control",
+  "software_class": "device, edge, sensor, or control system with physical-world constraints",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "edge-first-control",
+      "name": "Edge-first control system",
+      "default": true,
+      "when_to_use": "Local reliability and latency are central.",
+      "when_not_to_use": "Avoid when devices are simple telemetry sources.",
+      "rationale": "Keeps critical behavior near the device.",
+      "tradeoffs": "Deployment and updates are harder.",
+      "risks": "Local failures need safe fallback states."
+    },
+    {
+      "id": "cloud-managed-devices",
+      "name": "Cloud-managed device fleet",
+      "default": false,
+      "when_to_use": "Fleet visibility and centralized operations dominate.",
+      "when_not_to_use": "Avoid when local autonomy is required.",
+      "rationale": "Improves monitoring and configuration at scale.",
+      "tradeoffs": "Network dependency increases.",
+      "risks": "Remote command authority must be constrained."
+    },
+    {
+      "id": "telemetry-pipeline",
+      "name": "Telemetry pipeline",
+      "default": false,
+      "when_to_use": "The system primarily collects and analyzes device data.",
+      "when_not_to_use": "Avoid when active control is central.",
+      "rationale": "Separates ingestion from analysis.",
+      "tradeoffs": "Does not solve control behavior.",
+      "risks": "Data volume and retention can grow quickly."
+    }
+  ]
+}

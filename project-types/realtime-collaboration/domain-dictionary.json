@@ -1,0 +1,28 @@
+{
+  "profile_id": "realtime-collaboration",
+  "software_class": "realtime collaboration, messaging, shared editing, or synchronized workspace",
+  "common_users": [
+    "collaborator",
+    "moderator",
+    "workspace owner"
+  ],
+  "common_artifacts": [
+    "presence model",
+    "conflict model",
+    "sync protocol",
+    "permission matrix",
+    "latency budget"
+  ],
+  "anti_patterns": [
+    "realtime without conflict rules",
+    "no offline recovery",
+    "unbounded broadcast channels"
+  ],
+  "assumption_prompts": [
+    "[ASK] What user role owns the primary workflow?",
+    "[ASK] Which constraints make the default stack unsuitable?",
+    "[ASSUMPTION] Treat missing product details as reversible until confirmed.",
+    "[ASSUMPTION] Prefer the smallest architecture that satisfies explicit evidence."
+  ],
+  "domain_boundary": "Class-specific terms describe software behavior, not a market vertical default."
+}

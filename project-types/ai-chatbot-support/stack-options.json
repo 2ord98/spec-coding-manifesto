@@ -1,0 +1,37 @@
+{
+  "profile_id": "ai-chatbot-support",
+  "software_class": "conversational support assistant with escalation and service boundaries",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "rules-plus-llm",
+      "name": "Rules plus model assistant",
+      "default": true,
+      "when_to_use": "Known workflows need deterministic guardrails with flexible language.",
+      "when_not_to_use": "Avoid when all behavior must be deterministic.",
+      "rationale": "Balances controllability and natural interaction.",
+      "tradeoffs": "Requires careful routing and fallback design.",
+      "risks": "Rules and model behavior can conflict."
+    },
+    {
+      "id": "workflow-chatbot",
+      "name": "Workflow chatbot",
+      "default": false,
+      "when_to_use": "The assistant primarily guides users through defined procedures.",
+      "when_not_to_use": "Avoid when open-ended knowledge retrieval is central.",
+      "rationale": "Makes state and escalation explicit.",
+      "tradeoffs": "Less flexible for broad questions.",
+      "risks": "Conversation design can become rigid."
+    },
+    {
+      "id": "support-copilot",
+      "name": "Support operator copilot",
+      "default": false,
+      "when_to_use": "Human operators remain in control and need suggested responses.",
+      "when_not_to_use": "Avoid when full self-service automation is required.",
+      "rationale": "Reduces risk by keeping humans in the loop.",
+      "tradeoffs": "Requires operator UX and audit evidence.",
+      "risks": "Suggestions can be over-trusted without review."
+    }
+  ]
+}

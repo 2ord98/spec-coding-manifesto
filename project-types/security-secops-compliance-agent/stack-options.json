@@ -1,0 +1,37 @@
+{
+  "profile_id": "security-secops-compliance-agent",
+  "software_class": "security, operations, compliance, audit, or risk workflow assistant",
+  "default_marker": "[DEFAULT -- review and override if needed]",
+  "options": [
+    {
+      "id": "audit-evidence-workflow",
+      "name": "Audit evidence workflow",
+      "default": true,
+      "when_to_use": "Evidence collection and review are central.",
+      "when_not_to_use": "Avoid when realtime operations are primary.",
+      "rationale": "Keeps controls traceable and reviewable.",
+      "tradeoffs": "Can be process-heavy.",
+      "risks": "Evidence can become stale without ownership."
+    },
+    {
+      "id": "secops-assistant",
+      "name": "SecOps assistant",
+      "default": false,
+      "when_to_use": "Operators need triage, enrichment, or guided response.",
+      "when_not_to_use": "Avoid when actions cannot be safely bounded.",
+      "rationale": "Improves response consistency with human control.",
+      "tradeoffs": "Needs strict permissions and logging.",
+      "risks": "Unsafe automation can create operational risk."
+    },
+    {
+      "id": "policy-as-code-gate",
+      "name": "Policy-as-code gate",
+      "default": false,
+      "when_to_use": "Controls must run automatically against artifacts.",
+      "when_not_to_use": "Avoid when policy is not formalized.",
+      "rationale": "Makes compliance repeatable and testable.",
+      "tradeoffs": "Requires policy maintenance.",
+      "risks": "False positives can block delivery."
+    }
+  ]
+}

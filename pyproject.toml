@@ -1,6 +1,6 @@
 [project]
 name = "spec-coding-manifesto"
-version = "0.5.0"
+version = "0.6.0"
 description = "Manifesto and operational kit for Specification-Driven Coding: specific, project-anchored AI product generation."
 requires-python = ">=3.10"
 readme = "README.md"

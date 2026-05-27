@@ -12,36 +12,9 @@ Specification-Driven Coding è un ingestion layer, execution contract e protocol
 - Anti-genericità by design. Project profile, Vertical Blueprint e scorecard gate rifiutano artefatti che collassano nei pattern medi dell'AI.
 - La specification è un contratto vivo. Continuous Specification Enforcement controlla specification, blueprint, plan, tasks e implementation. La deriva viene nominata, non nascosta.
 
-## Quick Start
+## Quick Start: consumer project mode
 
-```bash
-git clone https://github.com/2ord98/spec-coding-manifesto
-cd spec-coding-manifesto
-pip install -e .
-sdc doctor
-sdc demo run --fixture 001-builder-habit-dashboard
-```
-
-Nota: l'installazione è in modalità editable da checkout locale. Un pacchetto PyPI è previsto ma non ancora pubblicato — usa `pip install -e .` per ora.
-
-Per uno smoke check piu rapido:
-
-```bash
-sdc doctor --quick
-```
-
-Differenza chiave: molti workflow si fermano alla specification. Questo la fa rispettare dall'intake alla release.
-
-## Requisiti
-
-- Python 3.11+
-- Git
-
-In modalità consumer project non sono richiesti `uv`, `pipx`, installazione editable, comando globale, configurazione `PATH` o configurazione shell-specific.
-
-## Modalità consumer project
-
-Per un progetto che vuole usare Specification-Driven Coding come toolkit incorporato, usa una checkout deterministica senza installazione:
+Usa Specification-Driven Coding dentro un progetto esistente con una checkout `.sdc` deterministica e senza installazione:
 
 ```bash
 cd my-project
@@ -52,7 +25,16 @@ python3 .sdc/tools/sdc.py compile --workspace "$PWD/sdc-workspace/specs/001-my-p
 python3 .sdc/tools/sdc.py handoff --workspace "$PWD/sdc-workspace/specs/001-my-project" --target codex
 ```
 
-`pip install -e .sdc` è opzionale, non richiesto. Se usato direttamente dentro un consumer project, l'installazione editable può creare metadati `.egg-info` locali; preferisci `python3 .sdc/tools/sdc.py ...` per uso deterministico senza installazione. Se è disponibile un comando globale `sdc`, cerca dalla directory corrente verso l'alto la `.sdc/tools/sdc.py` più vicina.
+In modalità consumer project non sono richiesti `uv`, `pipx`, installazione editable, comando globale, configurazione `PATH` o configurazione shell-specific.
+
+Differenza chiave: molti workflow si fermano alla specification. Questo la fa rispettare dall'intake alla release.
+
+## Requisiti
+
+- Python 3.11+
+- Git
+
+La modalità contributor/editable install resta documentata più sotto. `pip install -e .sdc` è opzionale, non richiesto. Se usato direttamente dentro un consumer project, l'installazione editable può creare metadati `.egg-info` locali; preferisci `python3 .sdc/tools/sdc.py ...` per uso deterministico senza installazione. Se è disponibile un comando globale `sdc`, cerca dalla directory corrente verso l'alto la `.sdc/tools/sdc.py` più vicina.
 
 ## Dove si colloca
 

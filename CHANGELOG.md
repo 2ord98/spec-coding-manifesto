@@ -1,11 +1,38 @@
 # Changelog
 
-## Unreleased
+## [0.6.0] — 2026-05-27
 
-- Updated the `sdc` CLI wrapper to prefer an embedded `.sdc/tools/sdc.py` checkout from consumer projects before falling back to contributor checkout behavior.
-- Documented deterministic no-install consumer usage and clarified that editable install may create local `.egg-info` metadata.
-- Added profile-depth metadata, deterministic `sdc compile`, compile fixture 004, and executable compile assertions.
-- Added deterministic `sdc handoff`, target-specific prompt assembly, CLI target matrix, agentic protocol docs, MCP design metadata, and marketplace-readiness guidance.
+### Added
+
+- Python-first consumer workflow: `git clone ... .sdc` + `python3 .sdc/tools/sdc.py` requires only Python 3.11+ and Git.
+- Profile depth metadata for all 20 project profiles (`stack-options.json`, `domain-dictionary.json`, `security-baseline.md`, `performance-budget.json`, `testing-contract.md`, `blueprint-template.md`).
+- Deterministic `sdc compile`: stdlib-only artifact compiler, no LLM calls, fills decision boundaries using profile-depth metadata.
+- `sdc handoff`: deterministic prompt assembler for 8 target CLI workflows (`generic`, `codex`, `claude-code`, `cursor`, `aider`, `gemini-cli`, `builder`, `mcp`).
+- DSPy-inspired structural contracts: `ProfileSignature`, `RolePromptSignature`, `DecisionAssertion` in `tools/sdc_signature.py`.
+- `compile_with_assertions()` runtime validation against metric gates.
+- 13 domain-agnostic role prompts in `agents/role-prompts/`.
+- CLI Target Matrix (`docs/36-cli-target-matrix.md`).
+- Agentic protocol (`docs/37-agentic-protocol.md`).
+- MCP integration design (`docs/38-mcp-integration.md`) — design only, no runtime server.
+- Marketplace readiness guide (`docs/39-marketplace-submission-guidelines.md`).
+- Structural fixture `004-compile-structural-validation`.
+- No-empty-critical-sections enforcement gate.
+- Anti-template charter and decision-space model docs.
+- Migration guide from editable install.
+
+### Changed
+
+- Profile list now shows `depth: PASS/FAIL`.
+- `spec_lint.py` extended with profile-depth, role-prompt, signature, handoff, MCP, and marketplace validation gates.
+- README and MANIFESTO updated with Python-first onboarding, Before/After comparison, anti-template positioning, and CLI matrix guidance.
+
+### Notes
+
+- compile and handoff are deterministic and stdlib-only.
+- No LLM or API calls are performed.
+- No application domain is hardcoded in profile metadata or engine logic.
+- No marketplace submission has been made.
+- PyPI publication is planned for a future release.
 
 ## 0.5.0
 

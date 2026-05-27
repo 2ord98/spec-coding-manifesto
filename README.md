@@ -12,36 +12,9 @@ Specification-Driven Coding is an ingestion layer, execution contract, and conti
 - Anti-genericity by design. Project profiles, Vertical Blueprints, and scorecard gates reject artifacts that collapse into AI-default product patterns.
 - The spec is a living contract. Continuous Specification Enforcement cross-checks specification, blueprint, plan, tasks, and implementation. Drift is named, not hidden.
 
-## Quick Start
+## Quick Start: Consumer Project Mode
 
-```bash
-git clone https://github.com/2ord98/spec-coding-manifesto
-cd spec-coding-manifesto
-pip install -e .
-sdc doctor
-sdc demo run --fixture 001-builder-habit-dashboard
-```
-
-Note: install is editable from a local checkout. A PyPI package is planned but not yet published — use `pip install -e .` for now.
-
-For a faster smoke check:
-
-```bash
-sdc doctor --quick
-```
-
-What makes this different: most workflows stop at the specification. This one enforces it from intake to release.
-
-## Requirements
-
-- Python 3.11+
-- Git
-
-No `uv`, `pipx`, editable install, global command, PATH setup, or shell-specific configuration is required for consumer project mode.
-
-## Consumer Project Mode
-
-For a project that wants to use Specification-Driven Coding as an embedded toolkit, use a deterministic no-install checkout:
+Use Specification-Driven Coding inside an existing project with a deterministic no-install `.sdc` checkout:
 
 ```bash
 cd my-project
@@ -52,7 +25,16 @@ python3 .sdc/tools/sdc.py compile --workspace "$PWD/sdc-workspace/specs/001-my-p
 python3 .sdc/tools/sdc.py handoff --workspace "$PWD/sdc-workspace/specs/001-my-project" --target codex
 ```
 
-`pip install -e .sdc` is optional, not required. If used directly in a consumer project, editable install may create local `.egg-info` metadata; prefer `python3 .sdc/tools/sdc.py ...` for deterministic no-install usage. If a global `sdc` command is available, it searches the current directory and parents for the nearest `.sdc/tools/sdc.py`.
+No `uv`, `pipx`, editable install, global command, PATH setup, or shell-specific configuration is required for consumer project mode.
+
+What makes this different: most workflows stop at the specification. This one enforces it from intake to release.
+
+## Requirements
+
+- Python 3.11+
+- Git
+
+Contributor/editable install remains supported later in this README. `pip install -e .sdc` is optional, not required. If used directly in a consumer project, editable install may create local `.egg-info` metadata; prefer `python3 .sdc/tools/sdc.py ...` for deterministic no-install usage. If a global `sdc` command is available, it searches the current directory and parents for the nearest `.sdc/tools/sdc.py`.
 
 ## Where it fits
 

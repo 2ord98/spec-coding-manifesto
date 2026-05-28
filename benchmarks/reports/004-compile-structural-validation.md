@@ -1,7 +1,7 @@
 # Harness report: 004-compile-structural-validation
 
 Generated: reproducible local harness run
-Result: 33/33
+Result: 37/37
 
 | Check | Result | Detail |
 |---|---:|---|
@@ -29,13 +29,17 @@ Result: 33/33
 | required sections present | PASS | covered |
 | forbidden empty sections | PASS | none |
 | default marker present | PASS | [DEFAULT — review and override if needed] |
-| DecisionAssertion passes | PASS | {"ask_count": 21, "assumption_count": 15, "critical_section_filled": true, "has_default_marker": true, "passes": true, "score_min": 80} |
+| DecisionAssertion passes | PASS | {"ask_count": 21, "assumption_count": 15, "critical_section_filled": true, "has_default_marker": true, "passes": true, "score": null, "score_min": 80} |
 | ask threshold | PASS | 21 |
 | assumption threshold | PASS | 15 |
 | security baseline included | PASS | Security Baseline |
 | performance budget included | PASS | startup_or_first_response |
 | testing contract included | PASS | Testing Contract |
 | scorecard exists | PASS | scorecard.md |
+| decision ledger exists | PASS | decisions.jsonl |
+| capability boundaries exist | PASS | capability-boundaries.json |
+| decision ledger valid | PASS | 8 entries |
+| capability boundaries valid | PASS | manual schema check |
 | blueprint score threshold | PASS | 100/100 |
 | json includes assertion report | PASS | assertion |
 

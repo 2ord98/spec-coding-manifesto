@@ -1,0 +1,27 @@
+{
+  "forbidden_libraries": [],
+  "forbidden_patterns": [
+    "dashboard shell before workflow evidence",
+    "auth plus CRUD as a product substitute",
+    "multi-tenant assumptions without need",
+    "generic-saas-dashboard",
+    "stack-by-habit"
+  ],
+  "off_limits_layers": [
+    "undeclared payment processing",
+    "undeclared account management",
+    "undeclared background automation"
+  ],
+  "requires_approval": [
+    "collect-sensitive-data",
+    "add-authentication",
+    "add-database",
+    "add-third-party-tracking",
+    "call-external-api"
+  ],
+  "allowed_external_services": [],
+  "data_boundary": "Collect only data explicitly required by the approved workflow.",
+  "network_boundary": "No external API calls unless declared in the blueprint.",
+  "write_boundary": "Do not modify files outside the approved project tree.",
+  "tool_boundary": "No destructive tool calls without explicit approval."
+}

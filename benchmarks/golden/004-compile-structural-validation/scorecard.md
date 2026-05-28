@@ -26,6 +26,7 @@
   "has_default_marker": true,
   "ask_count": 3,
   "assumption_count": 3,
+  "score": null,
   "score_min": 80,
   "passes": true
 }

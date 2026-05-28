@@ -69,6 +69,11 @@ REQUIRED_ROOT = [
     "docs/37-agentic-protocol.md",
     "docs/38-mcp-integration.md",
     "docs/39-marketplace-submission-guidelines.md",
+    "docs/40-contract-schema-hardening.md",
+    "schemas/decision-ledger.schema.json",
+    "schemas/capability-boundary.schema.json",
+    "templates/decisions/decisions.jsonl.example",
+    "templates/exceptions/EXC-template.md",
     ".specify/memory/constitution.md",
     ".specify/templates/overrides/checklist-template.md",
     ".specify/templates/overrides/analysis-template.md",
@@ -84,6 +89,7 @@ REQUIRED_ROOT = [
     "scorecards/continuous-enforcement-scorecard.md",
     "skills/specification-driven-coding/SKILL.md",
     "skills/INDEX.md",
+    "skills/activation-matrix.json",
     "tools/sdc.py",
     "tools/sdc_demo.py",
     "tools/sdc_enforce.py",
@@ -100,6 +106,8 @@ REQUIRED_ROOT = [
     "benchmarks/fixtures/004-compile-structural-validation/expected.json",
     "benchmarks/golden/004-compile-structural-validation/blueprint.md",
     "benchmarks/golden/004-compile-structural-validation/scorecard.md",
+    "benchmarks/golden/004-compile-structural-validation/decisions.jsonl",
+    "benchmarks/golden/004-compile-structural-validation/capability-boundaries.json",
     "benchmarks/golden/001-builder-habit-dashboard/intake.md",
     "benchmarks/golden/001-builder-habit-dashboard/spec.md",
     "benchmarks/golden/001-builder-habit-dashboard/blueprint.md",
@@ -136,6 +144,7 @@ PROFILE_DEPTH_FILES = {
     "performance-budget.json",
     "testing-contract.md",
     "blueprint-template.md",
+    "failure-modes.md",
 }
 
 IGNORED_PROFILE_DEPTH_SIDECARS = {".DS_Store"}
@@ -150,6 +159,80 @@ STACK_OPTION_KEYS = {
     "rationale",
     "tradeoffs",
     "risks",
+}
+
+FAILURE_MODE_SECTIONS = [
+    "## Typical AI failure modes",
+    "## Detection signals",
+    "## Prevention rules",
+    "## Verification checks",
+    "## Scorecard impact",
+]
+
+DECISION_LEDGER_FIELDS = {
+    "id",
+    "type",
+    "decision",
+    "reason",
+    "impact",
+    "reversible",
+    "verification",
+    "source",
+    "created_at",
+}
+
+DECISION_LEDGER_TYPES = {
+    "assumption",
+    "constraint",
+    "stack-choice",
+    "scope-choice",
+    "security-choice",
+    "privacy-choice",
+    "testing-choice",
+    "performance-choice",
+    "exception-reference",
+}
+
+CAPABILITY_BOUNDARY_FIELDS = {
+    "forbidden_libraries",
+    "forbidden_patterns",
+    "off_limits_layers",
+    "requires_approval",
+    "allowed_external_services",
+    "data_boundary",
+    "network_boundary",
+    "write_boundary",
+    "tool_boundary",
+}
+
+CAPABILITY_BOUNDARY_LIST_FIELDS = {
+    "forbidden_libraries",
+    "forbidden_patterns",
+    "off_limits_layers",
+    "requires_approval",
+    "allowed_external_services",
+}
+
+SKILL_ACTIVATION_FIELDS = {
+    "id",
+    "profile",
+    "phase",
+    "workspace_state",
+    "activate",
+    "never_activate",
+    "condition",
+    "target_cli_hints",
+}
+
+SKILL_ACTIVATION_PHASES = {
+    "intake",
+    "spec",
+    "compile",
+    "handoff",
+    "implementation",
+    "review",
+    "verify",
+    "release",
 }
 
 ROLE_PROMPT_FILES = [
@@ -705,6 +788,189 @@ def check_profile_depth() -> int:
                 except (OSError, ValueError) as exc:
                     print(f"PROFILE_DEPTH: {profile_id}/{name} invalid JSON: {exc}")
                     issues += 1
+        failure_path = depth_dir / "failure-modes.md"
+        if failure_path.exists():
+            failure_text = failure_path.read_text(encoding="utf-8", errors="ignore")
+            for section in FAILURE_MODE_SECTIONS:
+                if section not in failure_text:
+                    print(f"PROFILE_DEPTH: {profile_id}/failure-modes.md missing section {section}")
+                    issues += 1
+    return issues
+
+
+def validate_decision_ledger(path: Path, label: str) -> int:
+    issues = 0
+    seen_ids: set[str] = set()
+    lines = [line for line in path.read_text(encoding="utf-8", errors="ignore").splitlines() if line.strip()]
+    if not lines:
+        print(f"DECISION_LEDGER: {label} is empty")
+        return 1
+    for line_number, line in enumerate(lines, start=1):
+        try:
+            entry = json.loads(line)
+        except ValueError as exc:
+            print(f"DECISION_LEDGER: {label}:{line_number} invalid JSON: {exc}")
+            issues += 1
+            continue
+        if not isinstance(entry, dict):
+            print(f"DECISION_LEDGER: {label}:{line_number} must be an object")
+            issues += 1
+            continue
+        missing = sorted(DECISION_LEDGER_FIELDS - set(entry))
+        if missing:
+            print(f"DECISION_LEDGER: {label}:{line_number} missing fields: {', '.join(missing)}")
+            issues += 1
+        entry_id = entry.get("id")
+        if not isinstance(entry_id, str) or not re.fullmatch(r"DEC-\d{3}", entry_id):
+            print(f"DECISION_LEDGER: {label}:{line_number} invalid id: {entry_id}")
+            issues += 1
+        elif entry_id in seen_ids:
+            print(f"DECISION_LEDGER: {label}:{line_number} duplicate id: {entry_id}")
+            issues += 1
+        else:
+            seen_ids.add(entry_id)
+        if entry.get("type") not in DECISION_LEDGER_TYPES:
+            print(f"DECISION_LEDGER: {label}:{line_number} invalid type: {entry.get('type')}")
+            issues += 1
+        if not isinstance(entry.get("reversible"), bool):
+            print(f"DECISION_LEDGER: {label}:{line_number} reversible must be boolean")
+            issues += 1
+        for field in ["decision", "reason", "impact", "verification", "source", "created_at"]:
+            if not isinstance(entry.get(field), str) or not entry.get(field, "").strip():
+                print(f"DECISION_LEDGER: {label}:{line_number} empty {field}")
+                issues += 1
+    return issues
+
+
+def validate_capability_boundaries(path: Path, label: str) -> int:
+    issues = 0
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        print(f"CAPABILITY_BOUNDARY: {label} invalid JSON: {exc}")
+        return 1
+    if not isinstance(payload, dict):
+        print(f"CAPABILITY_BOUNDARY: {label} must be an object")
+        return 1
+    missing = sorted(CAPABILITY_BOUNDARY_FIELDS - set(payload))
+    if missing:
+        print(f"CAPABILITY_BOUNDARY: {label} missing fields: {', '.join(missing)}")
+        issues += 1
+    for field in CAPABILITY_BOUNDARY_LIST_FIELDS:
+        if not isinstance(payload.get(field), list):
+            print(f"CAPABILITY_BOUNDARY: {label} field {field} must be a list")
+            issues += 1
+    for field in sorted(CAPABILITY_BOUNDARY_FIELDS - CAPABILITY_BOUNDARY_LIST_FIELDS):
+        if not isinstance(payload.get(field), str) or not payload.get(field, "").strip():
+            print(f"CAPABILITY_BOUNDARY: {label} field {field} must be non-empty text")
+            issues += 1
+    if payload.get("forbidden_patterns") == [] and payload.get("requires_approval") == []:
+        print(f"CAPABILITY_BOUNDARY: {label} needs forbidden_patterns or requires_approval rationale")
+        issues += 1
+    return issues
+
+
+def check_contract_schema_hardening() -> int:
+    issues = 0
+    for rel in ["schemas/decision-ledger.schema.json", "schemas/capability-boundary.schema.json"]:
+        try:
+            json.loads((ROOT / rel).read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            print(f"SCHEMA_HARDENING: invalid JSON in {rel}: {exc}")
+            issues += 1
+    issues += validate_decision_ledger(
+        ROOT / "templates" / "decisions" / "decisions.jsonl.example",
+        "templates/decisions/decisions.jsonl.example",
+    )
+    exception_text = (ROOT / "templates" / "exceptions" / "EXC-template.md").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    for section in [
+        "# Title",
+        "## Status",
+        "## What diverged",
+        "## Expected contract",
+        "## Actual behavior",
+        "## Reason",
+        "## Risk",
+        "## Expiration / review date",
+        "## Approval",
+        "## Follow-up required",
+        "## Linked decisions",
+    ]:
+        if section not in exception_text:
+            print(f"SCHEMA_HARDENING: EXC-template.md missing section {section}")
+            issues += 1
+    docs_text = (ROOT / "docs" / "40-contract-schema-hardening.md").read_text(encoding="utf-8", errors="ignore")
+    for required in ["decisions.jsonl", "capability-boundaries.json", "failure-modes.md", "activation-matrix.json", "v0.8"]:
+        if required not in docs_text:
+            print(f"SCHEMA_HARDENING: docs/40 missing {required}")
+            issues += 1
+    for rel in [
+        "benchmarks/golden/004-compile-structural-validation/decisions.jsonl",
+        "benchmarks/golden/004-compile-structural-validation/capability-boundaries.json",
+    ]:
+        path = ROOT / rel
+        if path.exists():
+            if path.name == "decisions.jsonl":
+                issues += validate_decision_ledger(path, rel)
+            else:
+                issues += validate_capability_boundaries(path, rel)
+    return issues
+
+
+def check_skill_activation_matrix() -> int:
+    issues = 0
+    path = ROOT / "skills" / "activation-matrix.json"
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        print(f"SKILL_ACTIVATION: invalid JSON: {exc}")
+        return 1
+    rules = payload.get("rules") if isinstance(payload, dict) else None
+    if not isinstance(rules, list) or not rules:
+        print("SKILL_ACTIVATION: rules must be a non-empty list")
+        return 1
+    profile_ids = project_profile_ids()
+    skill_ids = {skill_path.parent.name for skill_path in (ROOT / "skills").glob("*/SKILL.md")}
+    seen_ids: set[str] = set()
+    for index, rule in enumerate(rules, start=1):
+        if not isinstance(rule, dict):
+            print(f"SKILL_ACTIVATION: rule {index} is not an object")
+            issues += 1
+            continue
+        missing = sorted(SKILL_ACTIVATION_FIELDS - set(rule))
+        if missing:
+            print(f"SKILL_ACTIVATION: rule {index} missing fields: {', '.join(missing)}")
+            issues += 1
+        rule_id = rule.get("id")
+        if not isinstance(rule_id, str) or not re.fullmatch(r"SKILL-ACT-\d{3}", rule_id):
+            print(f"SKILL_ACTIVATION: rule {index} invalid id: {rule_id}")
+            issues += 1
+        elif rule_id in seen_ids:
+            print(f"SKILL_ACTIVATION: duplicate id {rule_id}")
+            issues += 1
+        else:
+            seen_ids.add(rule_id)
+        if rule.get("profile") not in profile_ids:
+            print(f"SKILL_ACTIVATION: {rule_id} references missing profile {rule.get('profile')}")
+            issues += 1
+        if rule.get("phase") not in SKILL_ACTIVATION_PHASES:
+            print(f"SKILL_ACTIVATION: {rule_id} invalid phase {rule.get('phase')}")
+            issues += 1
+        for field in ["activate", "never_activate", "target_cli_hints"]:
+            if not isinstance(rule.get(field), list):
+                print(f"SKILL_ACTIVATION: {rule_id} field {field} must be a list")
+                issues += 1
+        for field in ["activate", "never_activate"]:
+            for skill in rule.get(field, []):
+                if skill not in skill_ids:
+                    print(f"SKILL_ACTIVATION: {rule_id} references missing skill {skill}")
+                    issues += 1
+        for field in ["workspace_state", "condition"]:
+            if not isinstance(rule.get(field), str) or not rule.get(field, "").strip():
+                print(f"SKILL_ACTIVATION: {rule_id} empty {field}")
+                issues += 1
     return issues
 
 
@@ -1146,6 +1412,14 @@ def main() -> int:
     profile_depth_issues = check_profile_depth()
     if profile_depth_issues:
         fail(f"found {profile_depth_issues} profile depth issues")
+
+    contract_schema_issues = check_contract_schema_hardening()
+    if contract_schema_issues:
+        fail(f"found {contract_schema_issues} contract schema hardening issues")
+
+    skill_activation_issues = check_skill_activation_matrix()
+    if skill_activation_issues:
+        fail(f"found {skill_activation_issues} skill activation matrix issues")
 
     role_prompt_issues = check_role_prompts()
     if role_prompt_issues:

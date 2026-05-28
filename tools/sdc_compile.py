@@ -39,6 +39,7 @@ PROFILE_DEPTH_FILES = [
     "performance-budget.json",
     "testing-contract.md",
     "blueprint-template.md",
+    "failure-modes.md",
 ]
 CRITICAL_BLUEPRINT_SECTIONS = [
     "Role contract",
@@ -56,6 +57,7 @@ CRITICAL_BLUEPRINT_SECTIONS = [
     "Scorecard",
 ]
 DEFAULT_MARKER = "[DEFAULT — review and override if needed]"
+DECISION_CREATED_AT = "1970-01-01T00:00:00Z"
 
 
 def read(path: Path) -> str:
@@ -125,6 +127,7 @@ def load_profile_depth(profile_id: str) -> dict[str, Any]:
         "performance": performance,
         "testing": read(depth_dir / "testing-contract.md"),
         "blueprint_template": read(depth_dir / "blueprint-template.md"),
+        "failure_modes": read(depth_dir / "failure-modes.md"),
     }
 
 
@@ -186,6 +189,131 @@ def matrix_markdown(rows: list[dict[str, str]]) -> str:
             f"| {row['choice']} | {row['option']} | {row['rationale']} Tradeoff: {row['tradeoffs']} | {row['rejected_alternative']} | {row['risk']} |"
         )
     return "\n".join(lines)
+
+
+def marker_text(value: str) -> str:
+    return re.sub(r"^\[(ASK|ASSUMPTION):\s*|\]$", "", value.strip()).strip()
+
+
+def next_decision_id(index: int) -> str:
+    return f"DEC-{index:03d}"
+
+
+def build_decision_ledger(sig: ProfileSignature) -> list[dict[str, Any]]:
+    """Create deterministic JSONL decision records from compile output space."""
+    rows: list[dict[str, Any]] = []
+
+    def add(
+        decision_type: str,
+        decision: str,
+        reason: str,
+        impact: str,
+        reversible: bool,
+        verification: str,
+    ) -> None:
+        rows.append(
+            {
+                "id": next_decision_id(len(rows) + 1),
+                "type": decision_type,
+                "decision": decision,
+                "reason": reason,
+                "impact": impact,
+                "reversible": reversible,
+                "verification": verification,
+                "source": "sdc compile",
+                "created_at": DECISION_CREATED_AT,
+            }
+        )
+
+    for assumption in sig.assumptions:
+        add(
+            "assumption",
+            marker_text(assumption),
+            "The request does not provide enough evidence to treat this as a fixed fact.",
+            "Keeps uncertainty visible before implementation.",
+            True,
+            "Resolve or accept the assumption before release.",
+        )
+
+    default_row = next((row for row in sig.decision_matrix if DEFAULT_MARKER in row.get("choice", "")), None)
+    if default_row:
+        add(
+            "stack-choice",
+            f"Review stack option: {default_row.get('option', '')}",
+            default_row.get("rationale", "Default option from profile-depth metadata."),
+            "Constrains stack discussion without making the stack final.",
+            True,
+            "Blueprint stack decision space must keep the default marker and rejected alternatives visible.",
+        )
+
+    add(
+        "scope-choice",
+        "Compile artifacts only; do not generate application code.",
+        "Compile is a deterministic contract compiler, not an app generator.",
+        "Prevents implementation from starting before artifacts are reviewed.",
+        True,
+        "Workspace should contain SDC artifacts and no generated app code from compile.",
+    )
+    add(
+        "security-choice",
+        "Require explicit approval before adding authentication, storage, tracking, or destructive tool behavior.",
+        "The raw request may omit sensitive boundary decisions.",
+        "Reduces unsafe default expansion and hidden data collection.",
+        True,
+        "Capability boundaries and blueprint security contract must list approval gates.",
+    )
+    add(
+        "privacy-choice",
+        "Collect only data explicitly required by the approved workflow.",
+        "Data boundaries must come from request evidence and artifact review.",
+        "Limits accidental personal data handling.",
+        True,
+        "Spec, blueprint, and capability boundaries must agree on data collection scope.",
+    )
+    add(
+        "testing-choice",
+        "Use the profile testing contract and scorecard as release gates.",
+        "Testing expectations must be tied to the software class before implementation.",
+        "Keeps validation explicit and repeatable.",
+        True,
+        "Tasks and scorecard must reference testing gates before release.",
+    )
+    return rows
+
+
+def render_decision_jsonl(decisions: list[dict[str, Any]]) -> str:
+    return "\n".join(json.dumps(row, ensure_ascii=False) for row in decisions) + "\n"
+
+
+def build_capability_boundaries(depth: dict[str, Any], sig: ProfileSignature) -> dict[str, Any]:
+    dictionary = depth["dictionary"]
+    anti_patterns = [
+        item
+        for item in dictionary.get("anti_patterns", [])
+        if isinstance(item, str) and item.strip()
+    ]
+    forbidden_patterns = list(dict.fromkeys(anti_patterns + ["generic-saas-dashboard", "stack-by-habit"]))
+    return {
+        "forbidden_libraries": [],
+        "forbidden_patterns": forbidden_patterns,
+        "off_limits_layers": [
+            "undeclared payment processing",
+            "undeclared account management",
+            "undeclared background automation",
+        ],
+        "requires_approval": [
+            "collect-sensitive-data",
+            "add-authentication",
+            "add-database",
+            "add-third-party-tracking",
+            "call-external-api",
+        ],
+        "allowed_external_services": [],
+        "data_boundary": "Collect only data explicitly required by the approved workflow.",
+        "network_boundary": "No external API calls unless declared in the blueprint.",
+        "write_boundary": "Do not modify files outside the approved project tree.",
+        "tool_boundary": "No destructive tool calls without explicit approval.",
+    }
 
 
 def generated_notice() -> str:
@@ -626,6 +754,8 @@ def compile_workspace(args: argparse.Namespace) -> dict[str, Any]:
         has_default_marker=DEFAULT_MARKER in generated["blueprint.md"],
     )
     generated["scorecard.md"] = render_scorecard(pre_assertion, profile_id)
+    decisions = build_decision_ledger(sig)
+    capability_boundaries = build_capability_boundaries(depth, sig)
     assertion = compile_with_assertions(
         sig,
         critical_section_filled=critical_sections_filled(generated["blueprint.md"]),
@@ -637,6 +767,11 @@ def compile_workspace(args: argparse.Namespace) -> dict[str, Any]:
         for name, text in generated.items():
             if merge_artifact(workspace / name, text, args.force, args.dry_run):
                 written.append(name)
+        if write(workspace / "decisions.jsonl", render_decision_jsonl(decisions), args.dry_run):
+            written.append("decisions.jsonl")
+        boundaries_text = json.dumps(capability_boundaries, indent=2, ensure_ascii=False) + "\n"
+        if write(workspace / "capability-boundaries.json", boundaries_text, args.dry_run):
+            written.append("capability-boundaries.json")
 
     if args.strict and (len(sig.open_questions) > 5 or not assertion.passes()):
         payload = assertion.report()
@@ -649,7 +784,13 @@ def compile_workspace(args: argparse.Namespace) -> dict[str, Any]:
         "input_space": sig.input_space(),
         "output_space": sig.output_space(),
         "assertion": assertion.report(),
-        "artifacts": {name: str(workspace / name) for name in generated},
+        "artifacts": {
+            **{name: str(workspace / name) for name in generated},
+            "decisions.jsonl": str(workspace / "decisions.jsonl"),
+            "capability-boundaries.json": str(workspace / "capability-boundaries.json"),
+        },
+        "decisions": decisions,
+        "capability_boundaries": capability_boundaries,
         "written": written,
         "dry_run": args.dry_run,
     }

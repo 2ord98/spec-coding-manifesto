@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.7.0] — 2026-05-28
+
+### Added
+
+- Formal decision ledger schema and template for decisions.jsonl.
+- Formal capability boundary schema for capability-boundaries.json.
+- Drift exception template and naming convention for future workspace exceptions.
+- Failure mode catalogs for all 20 project profiles.
+- Skill activation matrix for profile/phase/workspace-state driven skill selection.
+- sdc compile now emits decisions.jsonl and capability-boundaries.json.
+- Fixture 004 now validates formal ledger artifacts.
+- Contract schema hardening documentation.
+
+### Changed
+
+- Profile depth now includes 7 required files per profile, including failure-modes.md.
+- spec_lint.py validates decision ledgers, capability boundaries, exception template structure, failure-mode catalogs, and skill activation matrix.
+- Compile now preserves existing formal ledgers unless --force is used.
+- Formal ledger validation now rejects extra keys and malformed entries.
+- Documentation now positions sdc verify as the next deterministic verification phase.
+
+### Notes
+
+- No sdc verify implementation is included in this release.
+- No LLM or API calls are introduced.
+- No PyPI publication.
+- No runtime MCP server.
+- No marketplace submission.
+- The release remains deterministic and stdlib-only.
+
 ## [0.6.0] — 2026-05-27
 
 ### Added

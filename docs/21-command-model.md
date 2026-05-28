@@ -119,9 +119,11 @@ python3 -m sdc_cli enforce check --path benchmarks/golden/001-builder-habit-dash
 
 The CLI is intentionally thin. It exposes the command map, prints or inspects prompt files, delegates workspace creation to `tools/spec_scaffold.py`, and runs existing validation. It does not replace agent judgment or the artifact gates.
 
-`list` also reports profile-depth state for every project profile as `depth: PASS` or `depth: FAIL`. Profile-depth packages are decision boundaries, not templates: they constrain stack options, security baseline, performance budget, testing contract, and blueprint fields before implementation.
+`list` also reports profile-depth state for every project profile as `depth: PASS` or `depth: FAIL`. Profile-depth packages are decision boundaries, not templates: they constrain stack options, security baseline, performance budget, testing contract, blueprint fields, and failure modes before implementation.
 
-`compile` is a deterministic artifact compiler. It reads `raw-request.md`, `project-profile.md`, `artifact-manifest.json`, and `project-types/<profile-id>/`, then fills scaffold/placeholder artifact sections while preserving user-written content unless `--force` is used. It does not call models or APIs. It writes unresolved high-impact uncertainty as `[ASK]`, reversible defaults as `[ASSUMPTION]`, and validates output with `DecisionAssertion`.
+`compile` is a deterministic artifact compiler. It reads `raw-request.md`, `project-profile.md`, `artifact-manifest.json`, and `project-types/<profile-id>/`, then fills scaffold/placeholder artifact sections while preserving user-written content unless `--force` is used. It also emits `decisions.jsonl` and `capability-boundaries.json` as formal ledgers for future verification. It does not call models or APIs. It writes unresolved high-impact uncertainty as `[ASK]`, reversible defaults as `[ASSUMPTION]`, and validates output with `DecisionAssertion`.
+
+`sdc verify` is planned as a future consumer of `decisions.jsonl`, `capability-boundaries.json`, exception records, `failure-modes.md`, `skills/activation-matrix.json`, scorecards, and enforcement reports. It is not implemented in this version.
 
 `handoff` is deterministic prompt assembly. It reads a completed workspace, target CLI, role, and scope, then instantiates `RolePromptSignature` to produce a paste-ready execution packet. It does not call models, execute agents, or judge semantic quality.
 

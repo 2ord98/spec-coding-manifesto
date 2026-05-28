@@ -1,0 +1,54 @@
+{
+  "rules": [
+    {
+      "id": "SKILL-ACT-001",
+      "profile": "marketing-site-cms",
+      "phase": "compile",
+      "workspace_state": "raw-request-present",
+      "activate": ["anti-sameness", "blueprint-compiler", "evaluation-scorecard"],
+      "never_activate": ["rag-system"],
+      "condition": "public content, conversion, or CMS class with no retrieval corpus",
+      "target_cli_hints": ["codex", "cursor", "claude-code"]
+    },
+    {
+      "id": "SKILL-ACT-002",
+      "profile": "rag-knowledge-assistant",
+      "phase": "compile",
+      "workspace_state": "raw-request-present",
+      "activate": ["rag-system", "vertical-blueprint", "evaluation-scorecard"],
+      "never_activate": ["mobile-app"],
+      "condition": "retrieval or grounded answer workflow with a document or knowledge source",
+      "target_cli_hints": ["codex", "claude-code", "gemini-cli"]
+    },
+    {
+      "id": "SKILL-ACT-003",
+      "profile": "mobile-app",
+      "phase": "compile",
+      "workspace_state": "raw-request-present",
+      "activate": ["mobile-app", "anti-sameness", "vertical-blueprint"],
+      "never_activate": ["rag-system"],
+      "condition": "mobile-first user workflow with device, offline, or lifecycle constraints",
+      "target_cli_hints": ["cursor", "codex", "builder"]
+    },
+    {
+      "id": "SKILL-ACT-004",
+      "profile": "developer-tool-cli-mcp",
+      "phase": "handoff",
+      "workspace_state": "compiled-artifacts-present",
+      "activate": ["blueprint-compiler", "evaluation-scorecard", "specification-driven-coding"],
+      "never_activate": ["builder-ingestion"],
+      "condition": "developer tool, CLI, SDK, plugin, or local tool interface",
+      "target_cli_hints": ["codex", "claude-code", "aider"]
+    },
+    {
+      "id": "SKILL-ACT-005",
+      "profile": "multi-agent-control-system",
+      "phase": "review",
+      "workspace_state": "blueprint-present",
+      "activate": ["multi-agent-control-system", "evaluation-scorecard", "vertical-blueprint"],
+      "never_activate": ["mobile-app"],
+      "condition": "coordinated agent workflow requiring governance, escalation, or auditability",
+      "target_cli_hints": ["codex", "claude-code", "mcp"]
+    }
+  ]
+}

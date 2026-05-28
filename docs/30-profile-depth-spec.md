@@ -19,7 +19,7 @@ Use this document when adding or reviewing files under `project-types/<profile-i
 
 ## Outputs
 
-Each profile depth package must contain exactly these six files:
+Each profile depth package must contain exactly these seven files:
 
 1. `stack-options.json`
 2. `domain-dictionary.json`
@@ -27,6 +27,7 @@ Each profile depth package must contain exactly these six files:
 4. `performance-budget.json`
 5. `testing-contract.md`
 6. `blueprint-template.md`
+7. `failure-modes.md`
 
 ## Procedure
 
@@ -38,7 +39,7 @@ project-types/<profile-id>/
 
 Do not delete or replace the existing flat profile Markdown file.
 
-Populate the six required files with class-specific decision boundaries. The content must constrain implementation without turning the profile into an app generator.
+Populate the seven required files with class-specific decision boundaries. The content must constrain implementation without turning the profile into an app generator.
 
 ## JSON Contracts
 
@@ -66,11 +67,20 @@ Populate the six required files with class-specific decision boundaries. The con
 
 `domain-dictionary.json` must contain class vocabulary, common users, common artifacts, anti-patterns, and assumption prompts.
 
+`failure-modes.md` must contain these sections:
+
+- `## Typical AI failure modes`
+- `## Detection signals`
+- `## Prevention rules`
+- `## Verification checks`
+- `## Scorecard impact`
+
 ## Validation Rules
 
-- All 20 profiles must have all six files.
+- All 20 profiles must have all seven files.
 - Every required file must be non-empty.
 - `stack-options.json`, `domain-dictionary.json`, and `performance-budget.json` must be valid JSON.
+- `failure-modes.md` must be non-empty and include all required failure-mode sections.
 - `stack-options.json` must contain 3-5 stack options.
 - Exactly one stack option must have `"default": true`.
 - Each stack option must include:

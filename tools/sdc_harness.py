@@ -197,6 +197,61 @@ def check_compile_fixture(fixture: str) -> list[Check]:
         checks.append(Check("performance budget included", "startup_or_first_response" in blueprint, "startup_or_first_response"))
         checks.append(Check("testing contract included", "Testing Contract" in blueprint, "Testing Contract"))
         checks.append(Check("scorecard exists", (temp_workspace / "scorecard.md").exists(), "scorecard.md"))
+        decisions_path = temp_workspace / "decisions.jsonl"
+        boundaries_path = temp_workspace / "capability-boundaries.json"
+        checks.append(Check("decision ledger exists", decisions_path.exists(), "decisions.jsonl"))
+        checks.append(Check("capability boundaries exist", boundaries_path.exists(), "capability-boundaries.json"))
+        if decisions_path.exists():
+            decision_lines = [line for line in decisions_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+            valid_decisions = True
+            decision_ids: set[str] = set()
+            for line in decision_lines:
+                try:
+                    decision = json.loads(line)
+                except json.JSONDecodeError:
+                    valid_decisions = False
+                    break
+                if not isinstance(decision, dict):
+                    valid_decisions = False
+                    break
+                decision_id = decision.get("id")
+                valid_decisions = valid_decisions and isinstance(decision_id, str) and bool(re.fullmatch(r"DEC-\d{3}", decision_id))
+                valid_decisions = valid_decisions and decision_id not in decision_ids
+                valid_decisions = valid_decisions and isinstance(decision.get("reversible"), bool)
+                valid_decisions = valid_decisions and bool(decision.get("verification"))
+                if isinstance(decision_id, str):
+                    decision_ids.add(decision_id)
+            checks.append(Check("decision ledger valid", valid_decisions and bool(decision_lines), f"{len(decision_lines)} entries"))
+        if boundaries_path.exists():
+            try:
+                boundaries = json.loads(boundaries_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                boundaries = {}
+            required_boundaries = {
+                "forbidden_libraries",
+                "forbidden_patterns",
+                "off_limits_layers",
+                "requires_approval",
+                "allowed_external_services",
+                "data_boundary",
+                "network_boundary",
+                "write_boundary",
+                "tool_boundary",
+            }
+            boundary_lists = [
+                "forbidden_libraries",
+                "forbidden_patterns",
+                "off_limits_layers",
+                "requires_approval",
+                "allowed_external_services",
+            ]
+            valid_boundaries = isinstance(boundaries, dict) and required_boundaries <= set(boundaries)
+            valid_boundaries = valid_boundaries and all(isinstance(boundaries.get(key), list) for key in boundary_lists)
+            valid_boundaries = valid_boundaries and all(
+                isinstance(boundaries.get(key), str) and boundaries.get(key, "").strip()
+                for key in required_boundaries - set(boundary_lists)
+            )
+            checks.append(Check("capability boundaries valid", valid_boundaries, "manual schema check"))
         score = blueprint_score(temp_workspace / "blueprint.md")
         checks.append(Check("blueprint score threshold", score >= expected.get("score_min", 80), f"{score}/100"))
         checks.append(

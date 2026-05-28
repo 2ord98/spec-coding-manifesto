@@ -51,6 +51,9 @@ The `Vertical Blueprint` comes before the final plan and tasks because it is the
 15. Use `sdc compile` only as a deterministic artifact compiler: it does not generate apps, does not call LLMs/APIs, and must preserve uncertainty with `[ASK]` and `[ASSUMPTION]`.
 16. Use `sdc handoff` as deterministic prompt assembly: it must carry workspace, role, target CLI, decision matrix, `[ASK]`, `[ASSUMPTION]`, scorecard, and validation expectations.
 17. Do not infer domain-specific regulation unless the raw request states it.
+18. Treat `decisions.jsonl` and `capability-boundaries.json` as formal ledgers when present.
+19. Use `failure-modes.md` and `skills/activation-matrix.json` as lintable guidance, not as runtime automation.
+20. Do not claim `sdc verify` exists until it is implemented in a future release.
 
 ## Disciplina dell’agente
 
@@ -111,15 +114,16 @@ The `Vertical Blueprint` comes before the final plan and tasks because it is the
 18. `docs/37-agentic-protocol.md`
 19. `docs/38-mcp-integration.md`
 20. `docs/39-marketplace-submission-guidelines.md`
-21. `docs/16-cross-tool-ingestion-matrix.md`
-22. `docs/10-project-type-index.md`
-23. profilo in `project-types/`
-24. profile-depth package in `project-types/<profile-id>/`
-25. blueprint in `blueprints/`
-26. role prompt in `agents/role-prompts/`
-27. target plugin in `plugins/<target>/`
-28. template in `.specify/templates/overrides/`
-29. prompt operativo in `prompts/`
+21. `docs/40-contract-schema-hardening.md`
+22. `docs/16-cross-tool-ingestion-matrix.md`
+23. `docs/10-project-type-index.md`
+24. profilo in `project-types/`
+25. profile-depth package in `project-types/<profile-id>/`
+26. blueprint in `blueprints/`
+27. role prompt in `agents/role-prompts/`
+28. target plugin in `plugins/<target>/`
+29. template in `.specify/templates/overrides/`
+30. prompt operativo in `prompts/`
 
 ## Output minimo prima del codice
 

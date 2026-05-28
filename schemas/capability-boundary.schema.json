@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2ord98/spec-coding-manifesto/schemas/capability-boundary.schema.json",
+  "title": "Specification-Driven Coding Capability Boundary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "forbidden_libraries",
+    "forbidden_patterns",
+    "off_limits_layers",
+    "requires_approval",
+    "allowed_external_services",
+    "data_boundary",
+    "network_boundary",
+    "write_boundary",
+    "tool_boundary"
+  ],
+  "properties": {
+    "forbidden_libraries": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "forbidden_patterns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "off_limits_layers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "requires_approval": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowed_external_services": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "data_boundary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "network_boundary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "write_boundary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tool_boundary": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

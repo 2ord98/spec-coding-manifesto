@@ -27,6 +27,7 @@ PROFILE_DEPTH_FILES = {
     "performance-budget.json",
     "testing-contract.md",
     "blueprint-template.md",
+    "failure-modes.md",
 }
 
 
@@ -232,6 +233,10 @@ def artifact_manifest(args: argparse.Namespace) -> int:
             "scorecard.md",
             "artifact-manifest.json",
         ],
+        "generated_contract_ledgers": [
+            "decisions.jsonl",
+            "capability-boundaries.json",
+        ],
     }
     if args.format == "json":
         print(json.dumps(payload, indent=2))
@@ -240,6 +245,10 @@ def artifact_manifest(args: argparse.Namespace) -> int:
     print()
     print("## Required artifacts")
     for artifact in payload["required_artifacts"]:
+        print(f"- `{artifact}`")
+    print()
+    print("## Generated contract ledgers")
+    for artifact in payload["generated_contract_ledgers"]:
         print(f"- `{artifact}`")
     print()
     print("## Commands")

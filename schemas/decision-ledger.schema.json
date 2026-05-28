@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2ord98/spec-coding-manifesto/schemas/decision-ledger.schema.json",
+  "title": "Specification-Driven Coding Decision Ledger Entry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "type",
+    "decision",
+    "reason",
+    "impact",
+    "reversible",
+    "verification",
+    "source",
+    "created_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^DEC-[0-9]{3}$"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "assumption",
+        "constraint",
+        "stack-choice",
+        "scope-choice",
+        "security-choice",
+        "privacy-choice",
+        "testing-choice",
+        "performance-choice",
+        "exception-reference"
+      ]
+    },
+    "decision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "impact": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reversible": {
+      "type": "boolean"
+    },
+    "verification": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

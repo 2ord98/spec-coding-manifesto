@@ -72,7 +72,7 @@ python3 tools/score_blueprint.py blueprints/02-full-project-blueprint.md
 - `sdc_cli`: wrapper installabile che espone lo stesso comando come `sdc` tramite `pyproject.toml`.
 - `sdc_demo.py`: legge fixture e golden artifact esistenti e stampa un walkthrough compatto raw prompt -> artifact chain. Non genera app, non chiama API esterne e non richiede LLM.
 - `sdc_enforce.py`: controlla in modo strutturale che specification, Vertical Blueprint, plan, tasks, scorecard e implementation-like files restino allineati. Non prova correttezza semantica.
-- `sdc_compile.py`: compila artifact SDC densi in modo deterministico da raw request e profile-depth. Non genera app, non chiama LLM/API e usa `[ASK]` / `[ASSUMPTION]` per incertezza esplicita.
+- `sdc_compile.py`: compila artifact SDC densi in modo deterministico da raw request e profile-depth. Emette anche `decisions.jsonl` e `capability-boundaries.json`. Non genera app, non chiama LLM/API e usa `[ASK]` / `[ASSUMPTION]` per incertezza esplicita.
 - `sdc_handoff.py`: assembla prompt handoff target-specific da workspace SDC compilate. Non chiama LLM/API e non esegue agenti.
 - `sdc_harness.py`: verifica fixture benchmark e golden artifacts in modo riproducibile e senza dipendenze esterne.
 - `sdc_signature.py`: contiene dataclass stdlib-only ispirate a DSPy per i contratti futuri di profile compile e role handoff. Non importa DSPy, non chiama modelli e non fa IO.
@@ -82,6 +82,6 @@ python3 tools/score_blueprint.py blueprints/02-full-project-blueprint.md
 
 La CLI è un aiuto di navigazione e validazione. Non genera applicazioni, non sceglie l’architettura prodotto e non sostituisce il metodo Specification-Driven Coding.
 
-I profile-depth package in `project-types/<profile-id>/` descrivono confini decisionali, non template applicativi. `sdc compile` usa questi package come input; `sdc handoff` usa gli artifact compilati per creare execution packet per target CLI e builder.
+I profile-depth package in `project-types/<profile-id>/` descrivono confini decisionali, non template applicativi. Ogni package include anche `failure-modes.md`. `sdc compile` usa questi package come input; `sdc handoff` usa gli artifact compilati per creare execution packet per target CLI e builder. `sdc verify` è una direzione futura, non un comando disponibile in questa versione.
 
 `extension list` e `preset list` sono comandi di discovery. Leggono `extensions/catalog.json` e `presets/catalog.json`; non installano, non applicano e non recuperano codice remoto.

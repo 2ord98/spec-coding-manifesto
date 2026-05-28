@@ -42,7 +42,7 @@ Vibe coding is fast: a prompt goes in, usable software often comes out, and the 
 
 Specification-Driven Coding adds the missing layers: project profiles that narrow the design space before planning, Vertical Blueprints that encode the actual product, scorecards that judge artifacts against explicit gates rather than vibes, and Continuous Specification Enforcement that keeps specification, blueprint, plan, tasks, and implementation aligned as the project evolves.
 
-Profiles are decision boundaries, not templates. Each profile describes a class of software, its allowed decision space, anti-default constraints, risk filters, stack options, performance budget, security baseline, and testing contract. Market verticals come from the raw request, not from profile defaults.
+Profiles are decision boundaries, not templates. Each profile describes a class of software, its allowed decision space, anti-default constraints, risk filters, stack options, performance budget, security baseline, testing contract, and failure modes. Market verticals come from the raw request, not from profile defaults.
 
 ## Before / After
 
@@ -50,7 +50,7 @@ Raw request: "Build project X."
 
 Default/vibe risk: arbitrary stack, missing security, empty assumptions, and no validation target.
 
-SDC output: decision matrix, `[DEFAULT — review and override if needed]`, `[ASK]`, `[ASSUMPTION]`, security baseline, performance budget, scorecard target, and handoff prompt.
+SDC output: decision matrix, `[DEFAULT — review and override if needed]`, `[ASK]`, `[ASSUMPTION]`, `decisions.jsonl`, `capability-boundaries.json`, security baseline, performance budget, scorecard target, and handoff prompt.
 
 ## Try The Demo
 
@@ -153,7 +153,7 @@ At the end, return a 0-100 scorecard with gaps and next fixes.
 - `docs/20-artifact-toolkit-model.md`: operating model for artifacts, commands, templates, and validation.
 - `docs/21-command-model.md`: `/sdc.*` command model for using the repository as a toolkit.
 - `docs/25-english-public-index.md`: English-first public documentation and Italian companion policy.
-- `project-types/`: 20 project profiles that reduce generic output. Each profile has a profile-depth package with stack options, domain dictionary, security baseline, performance budget, testing contract, and blueprint template.
+- `project-types/`: 20 project profiles that reduce generic output. Each profile has a profile-depth package with stack options, domain dictionary, security baseline, performance budget, testing contract, blueprint template, and failure modes.
 - `blueprints/`: vertical contracts for full projects, small tasks, web, mobile, WordPress, RAG, and multi-agent systems.
 - `prompts/`: operational prompts for transforming incomplete requests into specific prompts and blueprints.
 - `agents/`: role definitions and role prompts for product, requirements, UX, platform, AI, security, QA, implementation, and release.
@@ -254,7 +254,9 @@ The `sdc` entrypoint is primarily intended for repository contributor mode and e
 
 `init` accepts both `--name` and an optional positional shorthand. If `--type` is missing, it fails with a clear example instead of scaffolding implicitly.
 
-`sdc compile` is deterministic and stdlib-only. It fills decision boundaries in existing SDC artifacts from `raw-request.md` and the selected profile-depth package. It does not generate application code, call an LLM/API, or choose a final stack as fact. Unresolved choices are written as `[ASK]`; reversible defaults are written as `[ASSUMPTION]`. Compile assertions use `DecisionAssertion` from `tools/sdc_signature.py`.
+`sdc compile` is deterministic and stdlib-only. It fills decision boundaries in existing SDC artifacts from `raw-request.md` and the selected profile-depth package. It also emits `decisions.jsonl` and `capability-boundaries.json` as formal ledgers for future verification. It does not generate application code, call an LLM/API, or choose a final stack as fact. Unresolved choices are written as `[ASK]`; reversible defaults are written as `[ASSUMPTION]`. Compile assertions use `DecisionAssertion` from `tools/sdc_signature.py`.
+
+`sdc verify` is planned for a future release. It does not exist in v0.7.
 
 `sdc handoff` is deterministic prompt assembly. It reads a compiled workspace and produces a target-specific execution packet for `generic`, `codex`, `claude-code`, `cursor`, `aider`, `gemini-cli`, `builder`, or `mcp`. It does not call an LLM/API or execute an agent.
 

@@ -153,7 +153,7 @@ Alla fine restituisci una scorecard 0-100 con gap e prossime correzioni.
 - `docs/20-artifact-toolkit-model.md`: modello operativo di artefatti, comandi, template e validazione.
 - `docs/21-command-model.md`: command model `/sdc.*` per usare la repo come toolkit operativo.
 - `docs/25-english-public-index.md`: policy per documentazione pubblica English-first e companion italiane.
-- `project-types/`: 20 profili progetto per evitare output generici. Ogni profile ha un profile-depth package con stack option, domain dictionary, security baseline, performance budget, testing contract e blueprint template.
+- `project-types/`: 20 profili progetto per evitare output generici. Ogni profile ha un profile-depth package con stack option, domain dictionary, security baseline, performance budget, testing contract, blueprint template e failure modes.
 - `blueprints/`: contratti verticali per progetti interi, task piccoli, web, mobile, WordPress, RAG e sistemi multi-agente.
 - `prompts/`: prompt operativi per trasformare richieste incomplete in prompt e blueprint specifici.
 - `agents/`: ruoli agentici e role prompt per prodotto, requirements, UX, platform, AI, security, QA, implementazione e release.
@@ -254,7 +254,9 @@ L'entrypoint `sdc` è pensato soprattutto per contributor mode e checkout `.sdc`
 
 `init` accetta sia `--name` sia una forma shorthand posizionale. Se `--type` manca, la CLI fallisce con un esempio esplicito invece di scaffoldingare in modo implicito.
 
-`sdc compile` è deterministico e stdlib-only. Riempie i confini decisionali negli artifact SDC esistenti partendo da `raw-request.md` e dal profile-depth package selezionato. Non genera codice applicativo, non chiama LLM/API e non sceglie uno stack finale come fatto certo. Le scelte irrisolte vengono scritte come `[ASK]`; i default reversibili come `[ASSUMPTION]`. Le compile assertion usano `DecisionAssertion` da `tools/sdc_signature.py`.
+`sdc compile` è deterministico e stdlib-only. Riempie i confini decisionali negli artifact SDC esistenti partendo da `raw-request.md` e dal profile-depth package selezionato. Emette anche `decisions.jsonl` e `capability-boundaries.json` come ledger formali per verifiche future. Non genera codice applicativo, non chiama LLM/API e non sceglie uno stack finale come fatto certo. Le scelte irrisolte vengono scritte come `[ASK]`; i default reversibili come `[ASSUMPTION]`. Le compile assertion usano `DecisionAssertion` da `tools/sdc_signature.py`.
+
+`sdc verify` è previsto per una release futura. Non esiste in v0.7.
 
 `sdc handoff` è assemblaggio deterministico di prompt. Legge una workspace compilata e produce un execution packet target-specific per `generic`, `codex`, `claude-code`, `cursor`, `aider`, `gemini-cli`, `builder` o `mcp`. Non chiama LLM/API e non esegue agenti.
 

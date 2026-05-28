@@ -40,7 +40,9 @@ Required fields:
 - `write_boundary`
 - `tool_boundary`
 
-Capability boundaries are generated from the selected profile class, profile-depth metadata, raw request evidence, and compile assumptions. They must not infer market-specific rules from profile defaults.
+In v0.7, capability boundaries are generated from the selected profile class, profile-depth metadata, and deterministic compiler defaults. They must not infer market-specific rules from profile defaults.
+
+Future v0.8/v0.9 verification work may consume the decision ledger, raw-request evidence, exception records, and resolved assumptions more deeply. That deeper evidence processing is not implemented in v0.7.
 
 ## Drift exception template
 

@@ -73,6 +73,15 @@ def write(path: Path, text: str, dry_run: bool) -> bool:
     return True
 
 
+def write_generated_ledger(path: Path, text: str, force: bool, dry_run: bool) -> tuple[bool, bool]:
+    """Write formal ledgers without overwriting reviewed files unless forced."""
+    if dry_run:
+        return False, False
+    if path.exists() and not force:
+        return False, True
+    return write(path, text, dry_run), False
+
+
 def slug_text(value: str, fallback: str = "project") -> str:
     words = re.findall(r"[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9_-]+", value)
     return " ".join(words[:10]) if words else fallback
@@ -766,15 +775,32 @@ def compile_workspace(args: argparse.Namespace) -> dict[str, Any]:
     )
 
     written: list[str] = []
+    kept: list[str] = []
     if not args.dry_run:
         for name, text in generated.items():
             if merge_artifact(workspace / name, text, args.force, args.dry_run):
                 written.append(name)
-        if write(workspace / "decisions.jsonl", render_decision_jsonl(decisions), args.dry_run):
+        wrote_decisions, kept_decisions = write_generated_ledger(
+            workspace / "decisions.jsonl",
+            render_decision_jsonl(decisions),
+            args.force,
+            args.dry_run,
+        )
+        if wrote_decisions:
             written.append("decisions.jsonl")
+        if kept_decisions:
+            kept.append("decisions.jsonl")
         boundaries_text = json.dumps(capability_boundaries, indent=2, ensure_ascii=False) + "\n"
-        if write(workspace / "capability-boundaries.json", boundaries_text, args.dry_run):
+        wrote_boundaries, kept_boundaries = write_generated_ledger(
+            workspace / "capability-boundaries.json",
+            boundaries_text,
+            args.force,
+            args.dry_run,
+        )
+        if wrote_boundaries:
             written.append("capability-boundaries.json")
+        if kept_boundaries:
+            kept.append("capability-boundaries.json")
 
     if args.strict and (len(sig.open_questions) > 5 or not assertion.passes()):
         payload = assertion.report()
@@ -795,6 +821,7 @@ def compile_workspace(args: argparse.Namespace) -> dict[str, Any]:
         "decisions": decisions,
         "capability_boundaries": capability_boundaries,
         "written": written,
+        "kept": kept,
         "dry_run": args.dry_run,
     }
 
@@ -804,6 +831,7 @@ def print_text(payload: dict[str, Any]) -> None:
     print(f"Workspace: {payload['workspace']}")
     print(f"Profile: {payload['profile_id']}")
     print(f"Files written: {', '.join(payload['written']) if payload['written'] else 'none'}")
+    print(f"Files kept: {', '.join(payload['kept']) if payload.get('kept') else 'none'}")
     print(f"Assertion: {'PASS' if payload['assertion']['passes'] else 'WARN'}")
     if not payload["assertion"]["passes"]:
         print("WARNING: compile assertion did not pass")
@@ -816,6 +844,7 @@ def print_markdown(payload: dict[str, Any]) -> None:
     print(f"- Profile: `{payload['profile_id']}`")
     print(f"- Dry run: `{payload['dry_run']}`")
     print(f"- Files written: {', '.join(payload['written']) if payload['written'] else 'none'}")
+    print(f"- Files kept: {', '.join(payload['kept']) if payload.get('kept') else 'none'}")
     print()
     print("## Output space")
     print()

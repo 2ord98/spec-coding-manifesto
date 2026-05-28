@@ -820,6 +820,10 @@ def validate_decision_ledger(path: Path, label: str) -> int:
         if missing:
             print(f"DECISION_LEDGER: {label}:{line_number} missing fields: {', '.join(missing)}")
             issues += 1
+        extra = sorted(set(entry) - DECISION_LEDGER_FIELDS)
+        if extra:
+            print(f"DECISION_LEDGER: {label}:{line_number} extra fields: {', '.join(extra)}")
+            issues += 1
         entry_id = entry.get("id")
         if not isinstance(entry_id, str) or not re.fullmatch(r"DEC-\d{3}", entry_id):
             print(f"DECISION_LEDGER: {label}:{line_number} invalid id: {entry_id}")
@@ -855,6 +859,10 @@ def validate_capability_boundaries(path: Path, label: str) -> int:
     missing = sorted(CAPABILITY_BOUNDARY_FIELDS - set(payload))
     if missing:
         print(f"CAPABILITY_BOUNDARY: {label} missing fields: {', '.join(missing)}")
+        issues += 1
+    extra = sorted(set(payload) - CAPABILITY_BOUNDARY_FIELDS)
+    if extra:
+        print(f"CAPABILITY_BOUNDARY: {label} extra fields: {', '.join(extra)}")
         issues += 1
     for field in CAPABILITY_BOUNDARY_LIST_FIELDS:
         if not isinstance(payload.get(field), list):

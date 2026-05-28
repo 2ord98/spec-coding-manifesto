@@ -211,6 +211,9 @@ def check_compile_fixture(fixture: str) -> list[Check]:
                 except json.JSONDecodeError:
                     valid_decisions = False
                     break
+                if not isinstance(decision, dict):
+                    valid_decisions = False
+                    break
                 decision_id = decision.get("id")
                 valid_decisions = valid_decisions and isinstance(decision_id, str) and bool(re.fullmatch(r"DEC-\d{3}", decision_id))
                 valid_decisions = valid_decisions and decision_id not in decision_ids

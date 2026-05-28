@@ -958,12 +958,16 @@ def check_skill_activation_matrix() -> int:
         if rule.get("phase") not in SKILL_ACTIVATION_PHASES:
             print(f"SKILL_ACTIVATION: {rule_id} invalid phase {rule.get('phase')}")
             issues += 1
+        list_fields: dict[str, list] = {}
         for field in ["activate", "never_activate", "target_cli_hints"]:
-            if not isinstance(rule.get(field), list):
+            value = rule.get(field)
+            if not isinstance(value, list):
                 print(f"SKILL_ACTIVATION: {rule_id} field {field} must be a list")
                 issues += 1
+                continue
+            list_fields[field] = value
         for field in ["activate", "never_activate"]:
-            for skill in rule.get(field, []):
+            for skill in list_fields.get(field, []):
                 if skill not in skill_ids:
                     print(f"SKILL_ACTIVATION: {rule_id} references missing skill {skill}")
                     issues += 1

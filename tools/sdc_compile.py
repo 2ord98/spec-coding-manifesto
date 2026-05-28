@@ -155,6 +155,13 @@ def build_assumptions(profile_id: str) -> list[str]:
     ]
 
 
+def anti_patterns_from(dictionary: dict[str, Any]) -> list[str]:
+    anti_patterns = dictionary.get("anti_patterns", [])
+    if not isinstance(anti_patterns, list):
+        return []
+    return [item for item in anti_patterns if isinstance(item, str) and item.strip()]
+
+
 def decision_rows(stack_payload: dict[str, Any]) -> list[dict[str, str]]:
     options = stack_payload.get("options", [])
     rows: list[dict[str, str]] = []
@@ -287,11 +294,7 @@ def render_decision_jsonl(decisions: list[dict[str, Any]]) -> str:
 
 def build_capability_boundaries(depth: dict[str, Any], sig: ProfileSignature) -> dict[str, Any]:
     dictionary = depth["dictionary"]
-    anti_patterns = [
-        item
-        for item in dictionary.get("anti_patterns", [])
-        if isinstance(item, str) and item.strip()
-    ]
+    anti_patterns = anti_patterns_from(dictionary)
     forbidden_patterns = list(dict.fromkeys(anti_patterns + ["generic-saas-dashboard", "stack-by-habit"]))
     return {
         "forbidden_libraries": [],
@@ -385,7 +388,7 @@ full-project candidate, pending clarification.
 
 ## Anti-genericity constraints
 
-{chr(10).join(f"- Avoid: {item}" for item in dictionary.get("anti_patterns", [])[:5])}
+{chr(10).join(f"- Avoid: {item}" for item in anti_patterns_from(dictionary)[:5])}
 
 ## Required blueprint
 
@@ -413,7 +416,7 @@ def render_spec(raw_request: str, profile_id: str, dictionary: dict[str, Any], q
 
 ## Anti-genericity constraints
 
-{chr(10).join(f"- {item}" for item in dictionary.get("anti_patterns", [])[:5])}
+{chr(10).join(f"- {item}" for item in anti_patterns_from(dictionary)[:5])}
 
 ## User journeys
 
